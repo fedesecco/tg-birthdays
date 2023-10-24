@@ -6,8 +6,8 @@
     "license": "GNU GENERAL PUBLIC LICENSE",
     "main": "dist/bot.js",
     "scripts": {
-        "go": "tsc && node dist/bot.js",
-        "start": "node dist/bot.js"
+        "local": "tsc && node .",
+        "start": "tsc && node dist/bot.js"
     },
     "devDependencies": {
         "@types/express": "^4.17.17",

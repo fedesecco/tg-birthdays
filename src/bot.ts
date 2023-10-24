@@ -1,9 +1,10 @@
 import { Bot, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-dotenv.config();
-import { Messages, Commands, People, Database } from './enums';
+import { Messages, Commands, People } from './enums';
 import { createClient } from '@supabase/supabase-js';
+
+dotenv.config();
 
 // TELEGRAM BOT INIT
 const token = process.env.TELEGRAM_TOKEN;

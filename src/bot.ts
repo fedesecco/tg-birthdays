@@ -63,12 +63,11 @@ async function buildBdaysMsg() {
     const rowDate = new Date();
     const day = rowDate.getDate().toString().padStart(2, '0');
     const month = (rowDate.getMonth() + 1).toString().padStart(2, '0');
-    const year = rowDate.getFullYear();
-    const today = `${day}/${month}/${year}`;
+    const today = `${day}/${month}`;
 
     let bdays: { name: string; birthday: string }[] = [];
-    bdays = data.filter((row) => {
-        row.birthday = today;
+    bdays = data.filter((row: { name: string; birthday: string }) => {
+        row.birthday.startsWith(today);
     });
 
     let msg = '';

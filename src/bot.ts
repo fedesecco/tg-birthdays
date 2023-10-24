@@ -67,6 +67,7 @@ async function buildBdaysMsg() {
 
     let bdays: { name: string; birthday: string }[] = [];
     bdays = data.filter((row: { name: string; birthday: string }) => {
+        console.log(`Filtering ${row.birthday} (${row.name})`);
         row.birthday.startsWith(today);
     });
 

@@ -2,7 +2,7 @@ import { Bot, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 dotenv.config();
-import { Messages, Chats, Commands, People } from './enums';
+import { Messages, Commands, People, Database } from './enums';
 import { createClient } from '@supabase/supabase-js';
 
 // TELEGRAM BOT INIT
@@ -18,7 +18,7 @@ const app = express();
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 if (supabase.storage) {
     console.log(`Login successful.`);
-}
+} else console.log('Fail on login');
 
 const activeChats: number[] = [People.Fede];
 
@@ -41,30 +41,52 @@ bot.command('test', async (ctx) => {
     console.log('/test triggered');
     let sender = ctx.from.id;
     console.log('Sender: ', sender);
-    let { data, error } = await supabase.from('birthdays').select();
-    await sendBdayMessage(Chats.GruppoTest);
+    const msg = await buildBdaysMsg();
+    bot.api.sendMessage(People.Fede, msg, { parse_mode: 'HTML' });
 });
 
 const logRequest = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method === 'POST' && req.path === `/${Commands.bdays}`) {
         console.log(`${Commands.bdays} triggered`);
+        const msg = await buildBdaysMsg();
         for (const chat of activeChats) {
-            await sendBdayMessage(chat);
+            bot.api.sendMessage(chat, msg, { parse_mode: 'HTML' });
         }
     }
     next();
 };
 
-async function sendBdayMessage(chat: number) {
+async function buildBdaysMsg() {
+    let { data, error } = await supabase.from('birthdays').select('*');
+    if (error) console.log('Error on supabase.from(birthdays).select(): ', error);
+
+    const rowDate = new Date();
+    const day = rowDate.getDate().toString().padStart(2, '0');
+    const month = (rowDate.getMonth() + 1).toString().padStart(2, '0');
+    const year = rowDate.getFullYear();
+    const today = `${day}/${month}/${year}`;
+
+    let bdays: { name: string; birthday: string }[] = [];
+    bdays = data.filter((row) => {
+        row.birthday = today;
+    });
+
     let msg = '';
-    if (users.length === 0) {
-        msg =
-            'Buongiono! Oggi non compie gli anni nessuno! Ma che merda!<br>Se mi sono dimenticato di qualcuno, potete per favore aggiungerlo';
+    if (bdays.length === 0) {
+        msg = 'Non ci sono compleanni oggi';
+    } else if (bdays.length === 1) {
+        msg = `Oggi compie gli anni ${bdays[0].name}`;
+    } else if (bdays.length > 1) {
+        msg = 'Oggi compiono gli anni';
+        bdays.forEach((bday, i) => {
+            msg += ` ${bday.name}`;
+            i < bdays.length ? (msg += ', ') : (msg += '.');
+        });
+    } else {
+        msg = `error, bdays length is ${bdays.length}`;
     }
-    msg += `Buongiorno! oggi ${users.length > 1 ? 'compiono' : 'compie'} gli anni ${
-        users.length > 1 ? users.length + ' persone!' : 'una persona!'
-    }`;
-    msg += '<br> Sapreste indovinare chi? (se lo sapete già ';
+
+    return msg;
 }
 
 //deploy

@@ -67,9 +67,14 @@ async function buildBdaysMsg() {
 
     let bdays: { name: string; birthday: string }[] = [];
     bdays = data.filter((row: { name: string; birthday: string }) => {
-        console.log(`Filtering ${row.birthday} (${row.name})`);
-        row.birthday.startsWith(today);
+        const [rowYear, rowMonth, rowDay] = row.birthday.split('-');
+        const rowDate = `${rowDay}/${rowMonth}`;
+        console.log(
+            `Testing ${row.name}: ${row.birthday} -> ${rowDate} vs ${today}: ${rowDate === today}`
+        );
+        return rowDate === today;
     });
+    console.log('bdays: ', bdays);
 
     let msg = '';
     if (bdays.length === 0) {

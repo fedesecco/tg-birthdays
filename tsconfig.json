@@ -8,9 +8,6 @@
         "stripInternal": true,
         "outDir": "./dist"
     },
-    "scripts": {
-        "tsc": "tsc"
-    },
     "include": ["src/**/*"],
     "exclude": ["node_modules", "**/*.spec.ts"]
 }

@@ -42,7 +42,7 @@ bot.command('test', async (ctx) => {
     let sender = ctx.from.id;
     console.log('Sender: ', sender);
     const msg = await buildBdaysMsg();
-    bot.api.sendMessage(People.Fede, msg, { parse_mode: 'HTML' });
+    bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });
 
 const logRequest = async (req: Request, res: Response, next: NextFunction) => {

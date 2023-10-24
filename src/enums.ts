@@ -1,5 +1,5 @@
 export enum Messages {
-    Intro = ``,
+    Intro = `Stop texting me, i am not your bot`,
     Help = 'Nessun aiuto a ancora disponibile.',
 }
 

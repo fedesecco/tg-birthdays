@@ -7,7 +7,7 @@
     "main": "dist/bot.js",
     "scripts": {
         "local": "tsc && node .",
-        "start": "tsc && node dist/bot.js"
+        "start": "node dist/bot.js"
     },
     "devDependencies": {
         "@types/express": "^4.17.17",

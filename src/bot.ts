@@ -1,7 +1,7 @@
 import { Bot, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { Messages, Commands, People } from './enums';
+import { Messages, Commands, People, BdayRow } from './enums';
 import { createClient } from '@supabase/supabase-js';
 
 dotenv.config();
@@ -24,27 +24,68 @@ if (supabase.storage) {
 } else console.log('Fail on login');
 
 const activeChats: number[] = [People.Fede];
+const admins: number[] = [People.Fede];
 
 // start
-bot.command('start', (ctx) => {
+bot.command(Commands.start, (ctx) => {
     console.log('/start triggered');
     ctx.reply(Messages.Intro, {
         parse_mode: 'HTML',
     });
 });
 // help
-bot.command('help', (ctx) => {
+bot.command(Commands.help, (ctx) => {
     console.log('/help triggered');
     ctx.reply(Messages.Help, {
         parse_mode: 'HTML',
     });
 });
+
 // test
-bot.command('test', async (ctx) => {
+bot.command(Commands.test, async (ctx) => {
     console.log('/test triggered');
     let sender = ctx.from.id;
-    const msg = await buildBdaysMsg();
+    const msg = isAdmin(sender) ? await buildBdaysMsg() : Messages.Unauthorized;
     bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
+});
+
+// add someone
+bot.command(Commands.add, async (ctx) => {
+    console.log(`${Commands.add} triggered`);
+    const sender = ctx.from.id;
+    // /add 05/34 Mario diventea 05/04 Mario
+    const inputText = ctx.message.text.substring(5);
+
+    if (isAdmin(sender)) {
+        const inputDate = inputText.slice(0, 5);
+        const inputDay0 = inputText.slice(0, 1);
+        const inputDay1 = inputText.slice(1, 2);
+        const inputDivider = inputText.slice(2, 3);
+        const inputMonth0 = inputText.slice(3, 4);
+        const inputMonth1 = inputText.slice(4, 5);
+        const inputName = inputText.slice(5);
+        if (inputText.length > 26) {
+            bot.api.sendMessage(sender, Messages.WrongFormat + Messages.TextTooLong);
+        } else if (
+            !['0,', '1', '2', '3'].includes(inputDay0) ||
+            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
+            !['0', '1'].includes(inputMonth0) ||
+            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
+            inputDivider != '/'
+        ) {
+            bot.api.sendMessage(sender, Messages.WrongFormat);
+        } else {
+            try {
+                await supabase.from('birthdays').insert([{ name: inputName, birthday: inputDate }]);
+                bot.api.sendMessage(sender, `Aggiunto ${inputName} con compleanno il ${inputDate}`);
+            } catch (error) {
+                console.log("Error on supabase.from('birthdays').insert: ", error);
+                bot.api.sendMessage(sender, Messages.ErrorOnInsert);
+            }
+        }
+    } else {
+        bot.api.sendMessage(sender, Messages.Unauthorized);
+    }
 });
 
 const logRequest = async (req: Request, res: Response, next: NextFunction) => {
@@ -61,17 +102,16 @@ const logRequest = async (req: Request, res: Response, next: NextFunction) => {
 async function buildBdaysMsg() {
     let { data, error } = await supabase.from('birthdays').select('*');
     if (error) console.log('Error on supabase.from(birthdays).select(): ', error);
+    let typedData = data as BdayRow[];
 
     const rowDate = new Date();
     const day = rowDate.getDate().toString().padStart(2, '0');
     const month = (rowDate.getMonth() + 1).toString().padStart(2, '0');
     const today = `${day}/${month}`;
 
-    let bdays: { name: string; birthday: string }[] = [];
-    bdays = data.filter((row: { name: string; birthday: string }) => {
-        const [rowYear, rowMonth, rowDay] = row.birthday.split('-');
-        const rowDate = `${rowDay}/${rowMonth}`;
-        return rowDate === today;
+    let bdays: BdayRow[] = [];
+    bdays = typedData.filter((row) => {
+        return row.birthday === today;
     });
 
     let msg = '';
@@ -92,6 +132,10 @@ async function buildBdaysMsg() {
     return msg;
 }
 
+function isAdmin(texter: number) {
+    return admins.includes(texter);
+}
+
 //deploy
 if (process.env.NODE_ENV === 'production') {
     // Use Webhooks for the production server
@@ -101,7 +145,7 @@ if (process.env.NODE_ENV === 'production') {
     app.use(webhookCallback(bot, 'express'));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-        console.log(`Bot listening on port ${PORT}}`);
+        console.log(`Bot listening on port ${PORT}`);
     });
 } else {
     // Use Long Polling for development

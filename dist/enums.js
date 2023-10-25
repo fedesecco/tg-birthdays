@@ -3,14 +3,20 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.People = exports.Chats = exports.Commands = exports.Messages = void 0;
 var Messages;
 (function (Messages) {
-    Messages["Intro"] = "Stop texting me, i am not your bot";
+    Messages["Intro"] = "tbd";
     Messages["Help"] = "Nessun aiuto a ancora disponibile.";
+    Messages["Unauthorized"] = "Non sei autorizzato ad usare questo comando";
+    Messages["WrongFormat"] = "Il testo inviato non \u00E8 nel formato corretto. ";
+    Messages["WrongRowFormat"] = "Deve essere \"gg/mm nome\", tipo 03/04 Mario Rossi";
+    Messages["TextTooLong"] = "Il testo \u00E8 troppo lungo";
+    Messages["ErrorOnInsert"] = "Errore nell'aggiunta del dato :(";
 })(Messages = exports.Messages || (exports.Messages = {}));
 var Commands;
 (function (Commands) {
     Commands["help"] = "help";
     Commands["start"] = "start";
     Commands["test"] = "test";
+    Commands["add"] = "add";
     Commands["bdays"] = "birthDaysOfTheDay";
 })(Commands = exports.Commands || (exports.Commands = {}));
 var Chats;

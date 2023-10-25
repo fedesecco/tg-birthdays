@@ -34,23 +34,61 @@ if (supabase.storage) {
 else
     console.log('Fail on login');
 const activeChats = [enums_1.People.Fede];
-bot.command('start', (ctx) => {
+const admins = [enums_1.People.Fede];
+bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
     ctx.reply(enums_1.Messages.Intro, {
         parse_mode: 'HTML',
     });
 });
-bot.command('help', (ctx) => {
+bot.command(enums_1.Commands.help, (ctx) => {
     console.log('/help triggered');
     ctx.reply(enums_1.Messages.Help, {
         parse_mode: 'HTML',
     });
 });
-bot.command('test', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+bot.command(enums_1.Commands.test, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/test triggered');
     let sender = ctx.from.id;
-    const msg = yield buildBdaysMsg();
+    const msg = isAdmin(sender) ? yield buildBdaysMsg() : enums_1.Messages.Unauthorized;
     bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
+}));
+bot.command(enums_1.Commands.add, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(`${enums_1.Commands.add} triggered`);
+    const sender = ctx.from.id;
+    const inputText = ctx.message.text.substring(5);
+    if (isAdmin(sender)) {
+        const inputDate = inputText.slice(0, 5);
+        const inputDay0 = inputText.slice(0, 1);
+        const inputDay1 = inputText.slice(1, 2);
+        const inputDivider = inputText.slice(2, 3);
+        const inputMonth0 = inputText.slice(3, 4);
+        const inputMonth1 = inputText.slice(4, 5);
+        const inputName = inputText.slice(5);
+        if (inputText.length > 26) {
+            bot.api.sendMessage(sender, enums_1.Messages.WrongFormat + enums_1.Messages.TextTooLong);
+        }
+        else if (!['0,', '1', '2', '3'].includes(inputDay0) ||
+            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
+            !['0', '1'].includes(inputMonth0) ||
+            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
+            inputDivider != '/') {
+            bot.api.sendMessage(sender, enums_1.Messages.WrongFormat);
+        }
+        else {
+            try {
+                yield supabase.from('birthdays').insert([{ name: inputName, birthday: inputDate }]);
+                bot.api.sendMessage(sender, `Aggiunto ${inputName} con compleanno il ${inputDate}`);
+            }
+            catch (error) {
+                console.log("Error on supabase.from('birthdays').insert: ", error);
+                bot.api.sendMessage(sender, enums_1.Messages.ErrorOnInsert);
+            }
+        }
+    }
+    else {
+        bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
+    }
 }));
 const logRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
@@ -67,15 +105,14 @@ function buildBdaysMsg() {
         let { data, error } = yield supabase.from('birthdays').select('*');
         if (error)
             console.log('Error on supabase.from(birthdays).select(): ', error);
+        let typedData = data;
         const rowDate = new Date();
         const day = rowDate.getDate().toString().padStart(2, '0');
         const month = (rowDate.getMonth() + 1).toString().padStart(2, '0');
         const today = `${day}/${month}`;
         let bdays = [];
-        bdays = data.filter((row) => {
-            const [rowYear, rowMonth, rowDay] = row.birthday.split('-');
-            const rowDate = `${rowDay}/${rowMonth}`;
-            return rowDate === today;
+        bdays = typedData.filter((row) => {
+            return row.birthday === today;
         });
         let msg = '';
         if (bdays.length === 0) {
@@ -97,6 +134,9 @@ function buildBdaysMsg() {
         return msg;
     });
 }
+function isAdmin(texter) {
+    return admins.includes(texter);
+}
 if (process.env.NODE_ENV === 'production') {
     const app = (0, express_1.default)();
     app.use(express_1.default.json());
@@ -104,7 +144,7 @@ if (process.env.NODE_ENV === 'production') {
     app.use((0, grammy_1.webhookCallback)(bot, 'express'));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-        console.log(`Bot listening on port ${PORT}}`);
+        console.log(`Bot listening on port ${PORT}`);
     });
 }
 else {

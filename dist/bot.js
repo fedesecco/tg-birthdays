@@ -15,9 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const grammy_1 = require("grammy");
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
 const enums_1 = require("./enums");
 const supabase_js_1 = require("@supabase/supabase-js");
+dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
     console.error('No token!');
@@ -25,7 +25,9 @@ if (!token) {
 const bot = new grammy_1.Bot(token);
 let storage;
 const app = (0, express_1.default)();
-const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+    auth: { persistSession: false },
+});
 if (supabase.storage) {
     console.log(`Login successful.`);
 }
@@ -47,7 +49,6 @@ bot.command('help', (ctx) => {
 bot.command('test', (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/test triggered');
     let sender = ctx.from.id;
-    console.log('Sender: ', sender);
     const msg = yield buildBdaysMsg();
     bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));
@@ -74,10 +75,8 @@ function buildBdaysMsg() {
         bdays = data.filter((row) => {
             const [rowYear, rowMonth, rowDay] = row.birthday.split('-');
             const rowDate = `${rowDay}/${rowMonth}`;
-            console.log(`Testing ${row.name}: ${row.birthday} -> ${rowDate} vs ${today}: ${rowDate === today}`);
             return rowDate === today;
         });
-        console.log('bdays: ', bdays);
         let msg = '';
         if (bdays.length === 0) {
             msg = 'Non ci sono compleanni oggi';

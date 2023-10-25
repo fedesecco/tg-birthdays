@@ -2,7 +2,7 @@
     "name": "tg-birthdays",
     "author": "Federico Secco",
     "description": "",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "license": "GNU GENERAL PUBLIC LICENSE",
     "main": "dist/bot.js",
     "scripts": {

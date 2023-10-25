@@ -65,20 +65,20 @@ bot.command(enums_1.Commands.add, (ctx) => __awaiter(void 0, void 0, void 0, fun
         const inputMonth0 = inputText.slice(3, 4);
         const inputMonth1 = inputText.slice(4, 5);
         const inputName = inputText.slice(5);
-        if (inputText.length > 26) {
-            bot.api.sendMessage(sender, enums_1.Messages.WrongFormat + enums_1.Messages.TextTooLong);
+        if (inputText.length > 36) {
+            bot.api.sendMessage(sender, enums_1.Messages.TextTooLong);
         }
         else if (!['0,', '1', '2', '3'].includes(inputDay0) ||
             !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
             !['0', '1'].includes(inputMonth0) ||
             !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
             inputDivider != '/') {
-            bot.api.sendMessage(sender, enums_1.Messages.WrongFormat);
+            bot.api.sendMessage(sender, enums_1.Messages.WrongAddFormat);
         }
         else {
             try {
                 yield supabase.from('birthdays').insert([{ name: inputName, birthday: inputDate }]);
-                bot.api.sendMessage(sender, `Aggiunto ${inputName} con compleanno il ${inputDate}`);
+                bot.api.sendMessage(sender, `Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
             }
             catch (error) {
                 console.log("Error on supabase.from('birthdays').insert: ", error);

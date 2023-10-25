@@ -2,8 +2,7 @@ export enum Messages {
     Intro = `tbd`,
     Help = 'Nessun aiuto a ancora disponibile.',
     Unauthorized = 'Non sei autorizzato ad usare questo comando',
-    WrongFormat = 'Il testo inviato non è nel formato corretto. ',
-    WrongRowFormat = 'Deve essere "gg/mm nome", tipo 03/04 Mario Rossi',
+    WrongAddFormat = 'Il testo inviato non è nel formato corretto. Deve essere "gg/mm nome", tipo 03/04 Mario Rossi',
     TextTooLong = 'Il testo è troppo lungo',
     ErrorOnInsert = "Errore nell'aggiunta del dato :(",
 }

@@ -16,7 +16,9 @@ let storage: any;
 
 // SUPABASE DATABASE INIT
 const app = express();
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+    auth: { persistSession: false },
+});
 if (supabase.storage) {
     console.log(`Login successful.`);
 } else console.log('Fail on login');
@@ -41,7 +43,6 @@ bot.command('help', (ctx) => {
 bot.command('test', async (ctx) => {
     console.log('/test triggered');
     let sender = ctx.from.id;
-    console.log('Sender: ', sender);
     const msg = await buildBdaysMsg();
     bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });
@@ -70,12 +71,8 @@ async function buildBdaysMsg() {
     bdays = data.filter((row: { name: string; birthday: string }) => {
         const [rowYear, rowMonth, rowDay] = row.birthday.split('-');
         const rowDate = `${rowDay}/${rowMonth}`;
-        console.log(
-            `Testing ${row.name}: ${row.birthday} -> ${rowDate} vs ${today}: ${rowDate === today}`
-        );
         return rowDate === today;
     });
-    console.log('bdays: ', bdays);
 
     let msg = '';
     if (bdays.length === 0) {

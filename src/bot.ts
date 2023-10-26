@@ -51,6 +51,7 @@ bot.command(Commands.test, async (ctx) => {
 bot.command(Commands.add, async (ctx) => {
     console.log(`${Commands.add} triggered`);
     const sender = ctx.from.id;
+    const senderName = ctx.from.first_name;
 
     let { data, error } = await supabase.from('users').select('*');
     if (error) console.log('Error on supabase.from(birthdays).select(): ', error);
@@ -59,7 +60,7 @@ bot.command(Commands.add, async (ctx) => {
     const users = userRows.map((userRow) => userRow.id);
     if (!users.includes(sender)) {
         try {
-            await supabase.from('users').insert<UserRow[]>([{ id: sender }]);
+            await supabase.from('users').insert<UserRow[]>([{ id: sender, name: senderName }]);
         } catch (error) {
             console.log("Error on supabase.from('users').insert: ", error);
             bot.api.sendMessage(sender, Messages.ErrorOnInsert);

@@ -46,4 +46,5 @@ export interface UserRow {
     id: number;
     status?: UserStatus;
     role?: UserRoles;
+    name?: string;
 }

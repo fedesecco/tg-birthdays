@@ -55,6 +55,7 @@ bot.command(enums_1.Commands.test, (ctx) => __awaiter(void 0, void 0, void 0, fu
 bot.command(enums_1.Commands.add, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`${enums_1.Commands.add} triggered`);
     const sender = ctx.from.id;
+    const senderName = ctx.from.first_name;
     let { data, error } = yield supabase.from('users').select('*');
     if (error)
         console.log('Error on supabase.from(birthdays).select(): ', error);
@@ -62,7 +63,7 @@ bot.command(enums_1.Commands.add, (ctx) => __awaiter(void 0, void 0, void 0, fun
     const users = userRows.map((userRow) => userRow.id);
     if (!users.includes(sender)) {
         try {
-            yield supabase.from('users').insert([{ id: sender }]);
+            yield supabase.from('users').insert([{ id: sender, name: senderName }]);
         }
         catch (error) {
             console.log("Error on supabase.from('users').insert: ", error);

@@ -17,6 +17,7 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const enums_1 = require("./enums");
 const supabase_js_1 = require("@supabase/supabase-js");
+const utils_1 = require("./utils");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -33,8 +34,6 @@ if (supabase.storage) {
 }
 else
     console.log('Fail on login');
-const activeChats = [enums_1.People.Fede];
-const admins = [enums_1.People.Fede];
 bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
     ctx.reply(enums_1.Messages.Intro, {
@@ -50,59 +49,60 @@ bot.command(enums_1.Commands.help, (ctx) => {
 bot.command(enums_1.Commands.test, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/test triggered');
     let sender = ctx.from.id;
-    const msg = isAdmin(sender) ? yield buildBdaysMsg() : enums_1.Messages.Unauthorized;
+    const msg = (0, utils_1.isAdmin)(sender) ? yield buildBdaysMsg(sender) : enums_1.Messages.Unauthorized;
     bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));
 bot.command(enums_1.Commands.add, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`${enums_1.Commands.add} triggered`);
     const sender = ctx.from.id;
+    let { data, error } = yield supabase.from('users').select('*');
+    if (error)
+        console.log('Error on supabase.from(birthdays).select(): ', error);
+    const userRows = data;
+    const users = userRows.map((userRow) => userRow.id);
+    if (!users.includes(sender)) {
+        try {
+            yield supabase.from('users').insert([{ id: sender }]);
+        }
+        catch (error) {
+            console.log("Error on supabase.from('users').insert: ", error);
+            bot.api.sendMessage(sender, enums_1.Messages.ErrorOnInsert);
+        }
+    }
     const inputText = ctx.message.text.substring(5);
-    if (isAdmin(sender)) {
-        const inputDate = inputText.slice(0, 5);
-        const inputDay0 = inputText.slice(0, 1);
-        const inputDay1 = inputText.slice(1, 2);
-        const inputDivider = inputText.slice(2, 3);
-        const inputMonth0 = inputText.slice(3, 4);
-        const inputMonth1 = inputText.slice(4, 5);
-        const inputName = inputText.slice(5);
-        if (inputText.length > 36) {
-            bot.api.sendMessage(sender, enums_1.Messages.TextTooLong);
-        }
-        else if (!['0,', '1', '2', '3'].includes(inputDay0) ||
-            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
-            !['0', '1'].includes(inputMonth0) ||
-            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
-            inputDivider != '/') {
-            bot.api.sendMessage(sender, enums_1.Messages.WrongAddFormat);
-        }
-        else {
-            try {
-                yield supabase.from('birthdays').insert([{ name: inputName, birthday: inputDate }]);
-                bot.api.sendMessage(sender, `Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
-            }
-            catch (error) {
-                console.log("Error on supabase.from('birthdays').insert: ", error);
-                bot.api.sendMessage(sender, enums_1.Messages.ErrorOnInsert);
-            }
-        }
+    const inputDate = inputText.slice(0, 5);
+    const inputDay0 = inputText.slice(0, 1);
+    const inputDay1 = inputText.slice(1, 2);
+    const inputDivider = inputText.slice(2, 3);
+    const inputMonth0 = inputText.slice(3, 4);
+    const inputMonth1 = inputText.slice(4, 5);
+    const inputName = inputText.slice(5);
+    if (inputText.length > 36) {
+        bot.api.sendMessage(sender, enums_1.Messages.TextTooLong);
+    }
+    else if (!['0', '1', '2', '3'].includes(inputDay0) ||
+        !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
+        !['0', '1'].includes(inputMonth0) ||
+        !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
+        inputDivider != '/') {
+        bot.api.sendMessage(sender, enums_1.Messages.WrongAddFormat);
     }
     else {
-        bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
-    }
-}));
-const logRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
-        console.log(`${enums_1.Commands.bdays} triggered`);
-        const msg = yield buildBdaysMsg();
-        for (const chat of activeChats) {
-            bot.api.sendMessage(chat, msg, { parse_mode: 'HTML' });
+        try {
+            yield supabase
+                .from('birthdays')
+                .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
+            bot.api.sendMessage(sender, `Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
+        }
+        catch (error) {
+            console.log("Error on supabase.from('birthdays').insert: ", error);
+            bot.api.sendMessage(sender, enums_1.Messages.ErrorOnInsert);
         }
     }
-    next();
-});
-function buildBdaysMsg() {
+}));
+function buildBdaysMsg(owner) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { data, error } = yield supabase.from('birthdays').select('*');
+        let { data, error } = yield supabase.from('birthdays').select('*').eq('owner', owner);
         if (error)
             console.log('Error on supabase.from(birthdays).select(): ', error);
         let typedData = data;
@@ -134,13 +134,27 @@ function buildBdaysMsg() {
         return msg;
     });
 }
-function isAdmin(texter) {
-    return admins.includes(texter);
-}
+const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
+        console.log(`${enums_1.Commands.bdays} triggered`);
+        let { data, error } = yield supabase.from('users').select('*');
+        if (error)
+            console.log('Error on supabase.from(birthdays).select(): ', error);
+        const users = data;
+        const chats = users
+            .filter((user) => user.status === enums_1.UserStatus.SUBSCRIBED)
+            .map((user) => user.id);
+        chats.forEach((subscriber) => __awaiter(void 0, void 0, void 0, function* () {
+            const msg = yield buildBdaysMsg(subscriber);
+            bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
+        }));
+    }
+    next();
+});
 if (process.env.NODE_ENV === 'production') {
     const app = (0, express_1.default)();
     app.use(express_1.default.json());
-    app.use(logRequest);
+    app.use(onRequest);
     app.use((0, grammy_1.webhookCallback)(bot, 'express'));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

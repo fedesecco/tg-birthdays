@@ -138,7 +138,7 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         let { data, error } = yield supabase
             .from('users')
             .select('*')
-            .eq('satus', enums_1.UserStatus.SUBSCRIBED);
+            .eq('status', enums_1.UserStatus.SUBSCRIBED);
         if (error)
             console.log('Error on supabase.from(users).select(): ', error);
         console.log('First row of users: ', data[0]);

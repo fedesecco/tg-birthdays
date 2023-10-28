@@ -141,7 +141,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         let { data, error } = await supabase
             .from('users')
             .select('*')
-            .eq('satus', UserStatus.SUBSCRIBED);
+            .eq('status', UserStatus.SUBSCRIBED);
         if (error) console.log('Error on supabase.from(users).select(): ', error);
         console.log('First row of users: ', data[0]);
 

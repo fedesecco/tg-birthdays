@@ -27,10 +27,11 @@ if (supabase.storage) {
 // start
 bot.command(Commands.start, (ctx) => {
     console.log('/start triggered');
-    ctx.reply(Messages.Intro, {
+    /* ctx.reply(Messages.Intro, {
         parse_mode: 'HTML',
-    });
+    }); */
 });
+
 // help
 bot.command(Commands.help, (ctx) => {
     console.log('/help triggered');
@@ -138,7 +139,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         console.log(`${Commands.bdays} triggered`);
 
         let { data, error } = await supabase.from('users').select('*');
-        if (error) console.log('Error on supabase.from(birthdays).select(): ', error);
+        if (error) console.log('Error on supabase.from(users).select(): ', error);
 
         const users: UserRow[] = data;
         const chats = users

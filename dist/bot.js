@@ -36,9 +36,6 @@ else
     console.log('Fail on login');
 bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
-    ctx.reply(enums_1.Messages.Intro, {
-        parse_mode: 'HTML',
-    });
 });
 bot.command(enums_1.Commands.help, (ctx) => {
     console.log('/help triggered');
@@ -140,7 +137,7 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         console.log(`${enums_1.Commands.bdays} triggered`);
         let { data, error } = yield supabase.from('users').select('*');
         if (error)
-            console.log('Error on supabase.from(birthdays).select(): ', error);
+            console.log('Error on supabase.from(users).select(): ', error);
         const users = data;
         const chats = users
             .filter((user) => user.status === enums_1.UserStatus.SUBSCRIBED)

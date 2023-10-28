@@ -138,13 +138,15 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method === 'POST' && req.path === `/${Commands.bdays}`) {
         console.log(`${Commands.bdays} triggered`);
 
-        let { data, error } = await supabase.from('users').select('*');
+        let { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('satus', UserStatus.SUBSCRIBED);
         if (error) console.log('Error on supabase.from(users).select(): ', error);
+        console.log('First row of users: ', data[0]);
 
-        const users: UserRow[] = data;
-        const chats = users
-            .filter((user) => user.status === UserStatus.SUBSCRIBED)
-            .map((user) => user.id);
+        const subscribedUsers: UserRow[] = data;
+        const chats = subscribedUsers.map((user) => user.id);
         chats.forEach(async (subscriber) => {
             const msg = await buildBdaysMsg(subscriber);
             bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });

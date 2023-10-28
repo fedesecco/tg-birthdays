@@ -135,13 +135,15 @@ function buildBdaysMsg(owner) {
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
         console.log(`${enums_1.Commands.bdays} triggered`);
-        let { data, error } = yield supabase.from('users').select('*');
+        let { data, error } = yield supabase
+            .from('users')
+            .select('*')
+            .eq('satus', enums_1.UserStatus.SUBSCRIBED);
         if (error)
             console.log('Error on supabase.from(users).select(): ', error);
-        const users = data;
-        const chats = users
-            .filter((user) => user.status === enums_1.UserStatus.SUBSCRIBED)
-            .map((user) => user.id);
+        console.log('First row of users: ', data[0]);
+        const subscribedUsers = data;
+        const chats = subscribedUsers.map((user) => user.id);
         chats.forEach((subscriber) => __awaiter(void 0, void 0, void 0, function* () {
             const msg = yield buildBdaysMsg(subscriber);
             bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });

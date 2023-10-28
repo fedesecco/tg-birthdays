@@ -149,6 +149,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         const chats = subscribedUsers.map((user) => user.id);
         chats.forEach(async (subscriber) => {
             const msg = await buildBdaysMsg(subscriber);
+            console.log(`Mi accingo ad inviare a ${subscriber} questo messaggio: `, msg);
             bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
         });
     }

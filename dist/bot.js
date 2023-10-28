@@ -146,6 +146,7 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         const chats = subscribedUsers.map((user) => user.id);
         chats.forEach((subscriber) => __awaiter(void 0, void 0, void 0, function* () {
             const msg = yield buildBdaysMsg(subscriber);
+            console.log(`Mi accingo ad inviare a ${subscriber} questo messaggio: `, msg);
             bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
         }));
     }

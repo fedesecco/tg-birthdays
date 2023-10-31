@@ -26,9 +26,7 @@ if (!token) {
 const bot = new grammy_1.Bot(token);
 let storage;
 const app = (0, express_1.default)();
-const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-    auth: { persistSession: false },
-});
+const supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 if (supabase.storage) {
     console.log(`Login successful.`);
 }
@@ -74,7 +72,7 @@ bot.command(enums_1.Commands.add, (ctx) => __awaiter(void 0, void 0, void 0, fun
     const inputDivider = inputText.slice(2, 3);
     const inputMonth0 = inputText.slice(3, 4);
     const inputMonth1 = inputText.slice(4, 5);
-    const inputName = inputText.slice(5);
+    const inputName = inputText.slice(5).trim();
     if (inputText.length > 36) {
         bot.api.sendMessage(sender, enums_1.Messages.TextTooLong);
     }

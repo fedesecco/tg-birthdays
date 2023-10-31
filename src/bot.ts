@@ -17,9 +17,7 @@ let storage: any;
 
 // SUPABASE DATABASE INIT
 const app = express();
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-    auth: { persistSession: false },
-});
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 if (supabase.storage) {
     console.log(`Login successful.`);
 } else console.log('Fail on login');
@@ -77,7 +75,7 @@ bot.command(Commands.add, async (ctx) => {
     const inputDivider = inputText.slice(2, 3);
     const inputMonth0 = inputText.slice(3, 4);
     const inputMonth1 = inputText.slice(4, 5);
-    const inputName = inputText.slice(5);
+    const inputName = inputText.slice(5).trim();
     if (inputText.length > 36) {
         bot.api.sendMessage(sender, Messages.TextTooLong);
     } else if (

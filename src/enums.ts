@@ -14,7 +14,7 @@ export enum Commands {
     start = 'start',
     test = 'test',
     add = 'add',
-    delete = 'delete',
+    delete = 'remove',
     list = 'list',
     bdays = 'birthDaysOfTheDay',
 }

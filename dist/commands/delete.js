@@ -26,14 +26,11 @@ function onDelete(ctx) {
             console.log(`Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`, error);
             bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
         }
-        else if (count === 0) {
-            bot_1.bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
-        }
         else if (count > 0) {
             bot_1.bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
         }
         else {
-            console.log(`Unexpected count value on delete: ${count}`);
+            bot_1.bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
         }
     });
 }

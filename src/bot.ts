@@ -51,7 +51,7 @@ bot.command(Commands.test, async (ctx) => {
 // add
 bot.command(Commands.add, onAdd);
 
-// delete
+// remove
 bot.command(Commands.delete, onDelete);
 
 // API calls from cyclic

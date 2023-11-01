@@ -20,6 +20,7 @@ const enums_1 = require("./enums");
 const supabase_js_1 = require("@supabase/supabase-js");
 const utils_1 = require("./utils");
 const add_1 = require("./commands/add");
+const delete_1 = require("./commands/delete");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -50,6 +51,7 @@ exports.bot.command(enums_1.Commands.test, (ctx) => __awaiter(void 0, void 0, vo
     exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));
 exports.bot.command(enums_1.Commands.add, add_1.onAdd);
+exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
         console.log(`${enums_1.Commands.bdays} triggered`);

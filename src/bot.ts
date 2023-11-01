@@ -1,10 +1,11 @@
 import { Bot, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { Messages, Commands, BdayRow, UserRow, UserStatus } from './enums';
+import { Messages, Commands, UserRow, UserStatus } from './enums';
 import { createClient } from '@supabase/supabase-js';
 import { buildBdaysMsg, isAdmin } from './utils';
 import { onAdd } from './commands/add';
+import { onDelete } from './commands/delete';
 
 dotenv.config();
 
@@ -49,6 +50,9 @@ bot.command(Commands.test, async (ctx) => {
 
 // add
 bot.command(Commands.add, onAdd);
+
+// delete
+bot.command(Commands.delete, onDelete);
 
 // API calls from cyclic
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {

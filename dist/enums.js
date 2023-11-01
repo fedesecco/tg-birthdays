@@ -17,6 +17,8 @@ var Commands;
     Commands["start"] = "start";
     Commands["test"] = "test";
     Commands["add"] = "add";
+    Commands["delete"] = "delete";
+    Commands["list"] = "list";
     Commands["bdays"] = "birthDaysOfTheDay";
 })(Commands = exports.Commands || (exports.Commands = {}));
 var Messages;

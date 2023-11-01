@@ -19,17 +19,18 @@ function onDelete(ctx) {
         const nameToDel = ctx.message.text.substring(8).trim();
         const { count, error } = yield bot_1.supabase
             .from('birthdays')
-            .delete()
+            .delete({ count: 'exact' })
             .eq('owner', sender)
             .eq('name', nameToDel);
         if (error) {
             console.log(`Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`, error);
             bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
         }
-        else if (count > 0) {
+        else if (count && count > 0) {
             bot_1.bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
         }
         else {
+            console.log(`Count: ${count}`);
             bot_1.bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
         }
     });

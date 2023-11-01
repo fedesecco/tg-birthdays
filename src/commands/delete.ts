@@ -9,7 +9,7 @@ export async function onDelete(ctx: CommandContext<Context>) {
 
     const { count, error } = await supabase
         .from('birthdays')
-        .delete()
+        .delete({ count: 'exact' })
         .eq('owner', sender)
         .eq('name', nameToDel);
 
@@ -19,9 +19,10 @@ export async function onDelete(ctx: CommandContext<Context>) {
             error
         );
         bot.api.sendMessage(sender, Messages.ErrorOnRequest);
-    } else if (count > 0) {
+    } else if (count && count > 0) {
         bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
     } else {
+        console.log(`Count: ${count}`);
         bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
     }
 }

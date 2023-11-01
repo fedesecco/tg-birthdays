@@ -1,26 +1,27 @@
 import { CommandContext, Context } from 'grammy';
-import { Commands } from '../enums';
+import { Commands, Messages } from '../enums';
 import { bot, supabase } from '../bot';
 
 export async function onDelete(ctx: CommandContext<Context>) {
     console.log(`${Commands.delete} triggered`);
     const sender = ctx.from.id;
-    const nameToDelete = ctx.message.text.substring(5).trim();
+    const nameToDel = ctx.message.text.substring(8).trim();
 
-    const { error } = await supabase
+    const { count, error } = await supabase
         .from('birthdays')
         .delete()
         .eq('owner', sender)
-        .eq('name', nameToDelete);
-    if (!error) {
-        bot.api.sendMessage(sender, `${nameToDelete} rimosso con successo`, { parse_mode: 'HTML' });
-    } else {
+        .eq('name', nameToDel);
+
+    if (error) {
         console.log(
-            `Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDelete})`,
+            `Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`,
             error
         );
-        bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDelete}"`, {
-            parse_mode: 'HTML',
-        });
+        bot.api.sendMessage(sender, Messages.ErrorOnRequest);
+    } else if (count === 0) {
+        bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
+    } else if (count > 0) {
+        bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
     }
 }

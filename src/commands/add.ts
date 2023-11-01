@@ -17,7 +17,7 @@ export async function onAdd(ctx: CommandContext<Context>) {
             await supabase.from('users').insert<UserRow[]>([{ id: sender, name: senderName }]);
         } catch (error) {
             console.log("Error on supabase.from('users').insert: ", error);
-            bot.api.sendMessage(sender, Messages.ErrorOnInsert);
+            bot.api.sendMessage(sender, Messages.ErrorOnRequest);
         }
     }
 
@@ -49,7 +49,7 @@ export async function onAdd(ctx: CommandContext<Context>) {
             bot.api.sendMessage(sender, `Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
         } catch (error) {
             console.log("Error on supabase.from('birthdays').insert: ", error);
-            bot.api.sendMessage(sender, Messages.ErrorOnInsert);
+            bot.api.sendMessage(sender, Messages.ErrorOnRequest);
         }
     }
 }

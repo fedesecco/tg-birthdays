@@ -16,20 +16,21 @@ function onDelete(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`${enums_1.Commands.delete} triggered`);
         const sender = ctx.from.id;
-        const nameToDelete = ctx.message.text.substring(5).trim();
-        const { error } = yield bot_1.supabase
+        const nameToDel = ctx.message.text.substring(8).trim();
+        const { count, error } = yield bot_1.supabase
             .from('birthdays')
             .delete()
             .eq('owner', sender)
-            .eq('name', nameToDelete);
-        if (!error) {
-            bot_1.bot.api.sendMessage(sender, `${nameToDelete} rimosso con successo`, { parse_mode: 'HTML' });
+            .eq('name', nameToDel);
+        if (error) {
+            console.log(`Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`, error);
+            bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
         }
-        else {
-            console.log(`Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDelete})`, error);
-            bot_1.bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDelete}"`, {
-                parse_mode: 'HTML',
-            });
+        else if (count === 0) {
+            bot_1.bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
+        }
+        else if (count > 0) {
+            bot_1.bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
         }
     });
 }

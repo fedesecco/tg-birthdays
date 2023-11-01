@@ -25,7 +25,7 @@ export enum Messages {
     Unauthorized = 'Non sei autorizzato ad usare questo comando',
     WrongAddFormat = 'Il testo inviato non è nel formato corretto. Deve essere "gg/mm nome", tipo 03/04 Mario Rossi',
     TextTooLong = 'Il testo è troppo lungo',
-    ErrorOnInsert = "Errore nell'aggiunta del dato :(",
+    ErrorOnRequest = 'Errore nella richiesta :(',
 }
 
 export interface BdayRow {

@@ -28,7 +28,7 @@ function onAdd(ctx) {
             }
             catch (error) {
                 console.log("Error on supabase.from('users').insert: ", error);
-                bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnInsert);
+                bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
             }
         }
         const inputText = ctx.message.text.substring(5);
@@ -58,7 +58,7 @@ function onAdd(ctx) {
             }
             catch (error) {
                 console.log("Error on supabase.from('birthdays').insert: ", error);
-                bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnInsert);
+                bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
             }
         }
     });

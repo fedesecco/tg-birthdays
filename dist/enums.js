@@ -28,7 +28,7 @@ var Messages;
     Messages["Unauthorized"] = "Non sei autorizzato ad usare questo comando";
     Messages["WrongAddFormat"] = "Il testo inviato non \u00E8 nel formato corretto. Deve essere \"gg/mm nome\", tipo 03/04 Mario Rossi";
     Messages["TextTooLong"] = "Il testo \u00E8 troppo lungo";
-    Messages["ErrorOnInsert"] = "Errore nell'aggiunta del dato :(";
+    Messages["ErrorOnRequest"] = "Errore nella richiesta :(";
 })(Messages = exports.Messages || (exports.Messages = {}));
 var UserRoles;
 (function (UserRoles) {

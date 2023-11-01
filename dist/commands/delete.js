@@ -32,6 +32,9 @@ function onDelete(ctx) {
         else if (count > 0) {
             bot_1.bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
         }
+        else {
+            console.log(`Unexpected count value on delete: ${count}`);
+        }
     });
 }
 exports.onDelete = onDelete;

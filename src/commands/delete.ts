@@ -23,5 +23,7 @@ export async function onDelete(ctx: CommandContext<Context>) {
         bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
     } else if (count > 0) {
         bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
+    } else {
+        console.log(`Unexpected count value on delete: ${count}`);
     }
 }

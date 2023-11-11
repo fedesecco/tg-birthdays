@@ -45,7 +45,7 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
     });
     const inputMonth = (await conversation.waitFor(':text')).message.text;
     const numberMonth = months[inputMonth];
-    const inputDate = inputDay + '/' + inputMonth;
+    const inputDate = inputDay + '/' + numberMonth;
 
     try {
         await supabase

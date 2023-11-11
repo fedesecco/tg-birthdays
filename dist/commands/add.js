@@ -55,7 +55,7 @@ function addConversation(conversation, ctx) {
         });
         const inputMonth = (yield conversation.waitFor(':text')).message.text;
         const numberMonth = months[inputMonth];
-        const inputDate = inputDay + '/' + inputMonth;
+        const inputDate = inputDay + '/' + numberMonth;
         try {
             yield bot_1.supabase
                 .from('birthdays')

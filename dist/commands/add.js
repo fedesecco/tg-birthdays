@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onAdd = void 0;
+exports.addConversation = exports.onAdd = void 0;
 const bot_1 = require("../bot");
 const enums_1 = require("../enums");
 function onAdd(ctx) {
@@ -19,7 +19,7 @@ function onAdd(ctx) {
         const senderName = ctx.from.first_name;
         let { data, error } = yield bot_1.supabase.from('users').select('*');
         if (error)
-            console.log('Error on supabase.from(birthdays).select(): ', error);
+            console.log('Error on supabase.from(users).select(): ', error);
         const userRows = data;
         const users = userRows.map((userRow) => userRow.id);
         if (!users.includes(sender)) {
@@ -31,36 +31,68 @@ function onAdd(ctx) {
                 bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
             }
         }
-        const inputText = ctx.message.text.substring(5);
-        const inputDate = inputText.slice(0, 5);
-        const inputDay0 = inputText.slice(0, 1);
-        const inputDay1 = inputText.slice(1, 2);
-        const inputDivider = inputText.slice(2, 3);
-        const inputMonth0 = inputText.slice(3, 4);
-        const inputMonth1 = inputText.slice(4, 5);
-        const inputName = inputText.slice(5).trim();
-        if (inputText.length > 36) {
-            bot_1.bot.api.sendMessage(sender, enums_1.Messages.TextTooLong);
-        }
-        else if (!['0', '1', '2', '3'].includes(inputDay0) ||
-            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
-            !['0', '1'].includes(inputMonth0) ||
-            !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
-            inputDivider != '/') {
-            bot_1.bot.api.sendMessage(sender, enums_1.Messages.WrongAddFormat);
-        }
-        else {
-            try {
-                yield bot_1.supabase
-                    .from('birthdays')
-                    .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
-                bot_1.bot.api.sendMessage(sender, `Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
-            }
-            catch (error) {
-                console.log("Error on supabase.from('birthdays').insert: ", error);
-                bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
-            }
-        }
+        yield ctx.conversation.enter(enums_1.Convs.addConversation);
     });
 }
 exports.onAdd = onAdd;
+function addConversation(conversation, ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const sender = ctx.from.id;
+        yield ctx.reply('Chi vuoi aggiungere?');
+        const inputName = yield askName(conversation, ctx);
+        yield ctx.reply('In che giorno compie gli anni?', {
+            reply_markup: {
+                keyboard: dayButtons,
+                one_time_keyboard: true,
+            },
+        });
+        const inputDay = (yield conversation.waitFor(':text')).message.text;
+        yield ctx.reply('E che mese?', {
+            reply_markup: {
+                keyboard: monthButtons,
+                one_time_keyboard: true,
+            },
+        });
+        const inputMonth = (yield conversation.waitFor(':text')).message.text;
+        const inputDate = inputDay + '/' + inputMonth;
+        try {
+            yield bot_1.supabase
+                .from('birthdays')
+                .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
+            yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
+        }
+        catch (error) {
+            console.log("Error on supabase.from('birthdays').insert: ", error);
+            yield ctx.reply(enums_1.Messages.ErrorOnRequest);
+        }
+    });
+}
+exports.addConversation = addConversation;
+function askName(conversation, ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let result = (yield conversation.waitFor(':text')).message.text;
+        if (result.length > 50) {
+            yield ctx.reply(`Name trppo lungo! Ho la memoria breve io. Re-inseriscilo`);
+            result = yield askName(conversation, ctx);
+        }
+        return result;
+    });
+}
+const dayButtons = Array.from({ length: 31 }, (_, index) => {
+    const day = (index + 1).toString().padStart(2, '0');
+    return [{ text: day, callback_data: `2023-01-${day}` }];
+});
+const monthButtons = [
+    [{ text: 'Gennaio', callback_data: '01' }],
+    [{ text: 'Febbraio', callback_data: '02' }],
+    [{ text: 'Marzo', callback_data: '03' }],
+    [{ text: 'Aprile', callback_data: '04' }],
+    [{ text: 'Maggio', callback_data: '05' }],
+    [{ text: 'Giugno', callback_data: '06' }],
+    [{ text: 'Luglio', callback_data: '07' }],
+    [{ text: 'Agosto', callback_data: '08' }],
+    [{ text: 'Settembre', callback_data: '09' }],
+    [{ text: 'Ottobre', callback_data: '10' }],
+    [{ text: 'Novembre', callback_data: '11' }],
+    [{ text: 'Dicembre', callback_data: '12' }],
+];

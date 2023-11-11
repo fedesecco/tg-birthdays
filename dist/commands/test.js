@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addConversation = exports.onTest = void 0;
+exports.onTest = void 0;
 const bot_1 = require("../bot");
 const enums_1 = require("../enums");
 const utils_1 = require("../utils");
@@ -24,62 +24,3 @@ function onTest(ctx) {
     });
 }
 exports.onTest = onTest;
-function addConversation(conversation, ctx) {
-    return __awaiter(this, void 0, void 0, function* () {
-        const sender = ctx.from.id;
-        yield ctx.reply('Chi vuoi aggiungere?');
-        const inputName = yield askName(conversation, ctx);
-        yield ctx.reply('In che giorno compie gli anni?', {
-            reply_markup: {
-                keyboard: dayButtons,
-            },
-        });
-        const inputDay = (yield conversation.waitFor(':text')).message.text;
-        yield ctx.reply('E che mese?', {
-            reply_markup: {
-                keyboard: monthButtons,
-            },
-        });
-        const inputMonth = (yield conversation.waitFor(':text')).message.text;
-        const inputDate = inputDay + '/' + inputMonth;
-        try {
-            yield bot_1.supabase
-                .from('birthdays')
-                .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
-            yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
-        }
-        catch (error) {
-            console.log("Error on supabase.from('birthdays').insert: ", error);
-            yield ctx.reply(enums_1.Messages.ErrorOnRequest);
-        }
-    });
-}
-exports.addConversation = addConversation;
-function askName(conversation, ctx) {
-    return __awaiter(this, void 0, void 0, function* () {
-        let result = (yield conversation.waitFor(':text')).message.text;
-        if (result.length > 50) {
-            yield ctx.reply(`Name trppo lungo! Ho la memoria breve io. Re-inseriscilo`);
-            result = yield askName(conversation, ctx);
-        }
-        return result;
-    });
-}
-const dayButtons = Array.from({ length: 31 }, (_, index) => {
-    const day = (index + 1).toString().padStart(2, '0');
-    return [{ text: day, callback_data: `2023-01-${day}` }];
-});
-const monthButtons = [
-    [{ text: 'January', callback_data: '01' }],
-    [{ text: 'February', callback_data: '02' }],
-    [{ text: 'March', callback_data: '03' }],
-    [{ text: 'April', callback_data: '04' }],
-    [{ text: 'May', callback_data: '05' }],
-    [{ text: 'June', callback_data: '06' }],
-    [{ text: 'July', callback_data: '07' }],
-    [{ text: 'August', callback_data: '08' }],
-    [{ text: 'September', callback_data: '09' }],
-    [{ text: 'October', callback_data: '10' }],
-    [{ text: 'November', callback_data: '11' }],
-    [{ text: 'December', callback_data: '12' }],
-];

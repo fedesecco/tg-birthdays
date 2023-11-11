@@ -4,10 +4,10 @@ import dotenv from 'dotenv';
 import { Messages, Commands, UserRow, UserStatus, MyContext } from './enums';
 import { createClient } from '@supabase/supabase-js';
 import { buildBdaysMsg, isAdmin } from './utils';
-import { onAdd } from './commands/add';
+import { addConversation, onAdd } from './commands/add';
 import { onDelete } from './commands/delete';
 import { conversations, createConversation } from '@grammyjs/conversations';
-import { addConversation, onTest } from './commands/test';
+import { onTest } from './commands/test';
 
 dotenv.config();
 

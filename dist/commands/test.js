@@ -46,11 +46,11 @@ function addConversation(conversation, ctx) {
             yield bot_1.supabase
                 .from('birthdays')
                 .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
-            ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
+            yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
         }
         catch (error) {
             console.log("Error on supabase.from('birthdays').insert: ", error);
-            ctx.reply(enums_1.Messages.ErrorOnRequest);
+            yield ctx.reply(enums_1.Messages.ErrorOnRequest);
         }
     });
 }

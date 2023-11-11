@@ -37,10 +37,10 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
         await supabase
             .from('birthdays')
             .insert<BdayRow[]>([{ name: inputName, birthday: inputDate, owner: sender }]);
-        ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
+        await ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
     } catch (error) {
         console.log("Error on supabase.from('birthdays').insert: ", error);
-        ctx.reply(Messages.ErrorOnRequest);
+        await ctx.reply(Messages.ErrorOnRequest);
     }
 }
 

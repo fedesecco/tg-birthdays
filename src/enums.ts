@@ -1,3 +1,9 @@
+import { ConversationFlavor, Conversation } from '@grammyjs/conversations';
+import { Context } from 'grammy';
+
+export type MyContext = Context & ConversationFlavor;
+export type MyConversation = Conversation<MyContext>;
+
 export enum Chats {
     GruppoTest = -927488637,
     Anighiri = -924838476,
@@ -47,4 +53,10 @@ export interface UserRow {
     status?: UserStatus;
     role?: UserRoles;
     name?: string;
+}
+
+export enum Convs {
+    addConversation = 'addConversation',
+    deleteConversation = 'deleteConversation',
+    findConversation = 'findConversation',
 }

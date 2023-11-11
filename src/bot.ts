@@ -1,11 +1,13 @@
 import { Bot, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { Messages, Commands, UserRow, UserStatus } from './enums';
+import { Messages, Commands, UserRow, UserStatus, MyContext } from './enums';
 import { createClient } from '@supabase/supabase-js';
 import { buildBdaysMsg, isAdmin } from './utils';
 import { onAdd } from './commands/add';
 import { onDelete } from './commands/delete';
+import { createConversation } from '@grammyjs/conversations';
+import { addConversation, onTest } from './commands/test';
 
 dotenv.config();
 
@@ -14,7 +16,7 @@ const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
     console.error('No token!');
 }
-export const bot = new Bot(token);
+export const bot = new Bot<MyContext>(token);
 let storage: any;
 
 // SUPABASE DATABASE INIT
@@ -31,19 +33,7 @@ bot.command(Commands.start, (ctx) => {
 });
 
 // test
-bot.command(Commands.test, async (ctx) => {
-    console.log('/test triggered');
-    const sender = ctx.from.id;
-    if (!isAdmin(sender)) {
-        bot.api.sendMessage(sender, Messages.Unauthorized);
-    }
-    ctx.reply('Choose an option:', {
-        reply_markup: {
-            keyboard: [['Option 1', 'Option 2']],
-            one_time_keyboard: true,
-        },
-    });
-});
+bot.command(Commands.test, onTest);
 
 // today (manda i compleanni del giorno)
 bot.command(Commands.triggerBdays, async (ctx) => {
@@ -89,6 +79,7 @@ if (process.env.NODE_ENV === 'production') {
     app.use(express.json());
     app.use(onRequest);
     app.use(webhookCallback(bot, 'express'));
+    bot.use(createConversation(addConversation));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);

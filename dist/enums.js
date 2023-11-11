@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UserStatus = exports.UserRoles = exports.Messages = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
+exports.Convs = exports.UserStatus = exports.UserRoles = exports.Messages = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
 var Chats;
 (function (Chats) {
     Chats[Chats["GruppoTest"] = -927488637] = "GruppoTest";
@@ -38,3 +38,9 @@ var UserStatus;
     UserStatus["SUBSCRIBED"] = "SUBSCRIBED";
     UserStatus["PAUSED"] = "PAUSED";
 })(UserStatus = exports.UserStatus || (exports.UserStatus = {}));
+var Convs;
+(function (Convs) {
+    Convs["addConversation"] = "addConversation";
+    Convs["deleteConversation"] = "deleteConversation";
+    Convs["findConversation"] = "findConversation";
+})(Convs = exports.Convs || (exports.Convs = {}));

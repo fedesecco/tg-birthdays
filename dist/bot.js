@@ -21,6 +21,8 @@ const supabase_js_1 = require("@supabase/supabase-js");
 const utils_1 = require("./utils");
 const add_1 = require("./commands/add");
 const delete_1 = require("./commands/delete");
+const conversations_1 = require("@grammyjs/conversations");
+const test_1 = require("./commands/test");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -39,19 +41,7 @@ exports.bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
     (0, add_1.onAdd)(ctx);
 });
-exports.bot.command(enums_1.Commands.test, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('/test triggered');
-    const sender = ctx.from.id;
-    if (!(0, utils_1.isAdmin)(sender)) {
-        exports.bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
-    }
-    ctx.reply('Choose an option:', {
-        reply_markup: {
-            keyboard: [['Option 1', 'Option 2']],
-            one_time_keyboard: true,
-        },
-    });
-}));
+exports.bot.command(enums_1.Commands.test, test_1.onTest);
 exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/today triggered');
     const sender = ctx.from.id;
@@ -85,6 +75,7 @@ if (process.env.NODE_ENV === 'production') {
     app.use(express_1.default.json());
     app.use(onRequest);
     app.use((0, grammy_1.webhookCallback)(exports.bot, 'express'));
+    exports.bot.use((0, conversations_1.createConversation)(test_1.addConversation));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);

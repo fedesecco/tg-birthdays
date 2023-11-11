@@ -46,14 +46,14 @@ function addConversation(conversation, ctx) {
                 one_time_keyboard: true,
             },
         });
-        const inputDay = (yield conversation.waitFor(':text')).callbackQuery.data;
+        const inputDay = (yield conversation.waitFor('callback_query')).callbackQuery.data;
         yield ctx.reply('E che mese?', {
             reply_markup: {
                 keyboard: monthButtons,
                 one_time_keyboard: true,
             },
         });
-        const inputMonth = (yield conversation.waitFor(':text')).callbackQuery.data;
+        const inputMonth = (yield conversation.waitFor('callback_query')).callbackQuery.data;
         const inputDate = inputDay + '/' + inputMonth;
         try {
             yield bot_1.supabase

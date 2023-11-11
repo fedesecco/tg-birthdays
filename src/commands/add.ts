@@ -35,7 +35,7 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
             one_time_keyboard: true,
         },
     });
-    const inputDay = (await conversation.waitFor(':text')).callbackQuery.data;
+    const inputDay = (await conversation.waitFor('callback_query')).callbackQuery.data;
 
     await ctx.reply('E che mese?', {
         reply_markup: {
@@ -43,7 +43,7 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
             one_time_keyboard: true,
         },
     });
-    const inputMonth = (await conversation.waitFor(':text')).callbackQuery.data;
+    const inputMonth = (await conversation.waitFor('callback_query')).callbackQuery.data;
     const inputDate = inputDay + '/' + inputMonth;
 
     try {

@@ -46,14 +46,14 @@ function addConversation(conversation, ctx) {
                 one_time_keyboard: true,
             },
         });
-        const inputDay = (yield conversation.waitFor('callback_query')).callbackQuery.data;
+        const inputDay = (yield conversation.waitFor(':text')).message.text;
         yield ctx.reply('E che mese?', {
             reply_markup: {
                 keyboard: monthButtons,
                 one_time_keyboard: true,
             },
         });
-        const inputMonth = (yield conversation.waitFor('callback_query')).callbackQuery.data;
+        const inputMonth = months[(yield conversation.waitFor(':text')).message.text];
         const inputDate = inputDay + '/' + inputMonth;
         try {
             yield bot_1.supabase
@@ -83,16 +83,30 @@ const dayButtons = Array.from({ length: 31 }, (_, index) => {
     return [{ text: day, callback_data: `${day}` }];
 });
 const monthButtons = [
-    [{ text: 'Gennaio', callback_data: '01' }],
-    [{ text: 'Febbraio', callback_data: '02' }],
-    [{ text: 'Marzo', callback_data: '03' }],
-    [{ text: 'Aprile', callback_data: '04' }],
-    [{ text: 'Maggio', callback_data: '05' }],
-    [{ text: 'Giugno', callback_data: '06' }],
-    [{ text: 'Luglio', callback_data: '07' }],
-    [{ text: 'Agosto', callback_data: '08' }],
-    [{ text: 'Settembre', callback_data: '09' }],
-    [{ text: 'Ottobre', callback_data: '10' }],
-    [{ text: 'Novembre', callback_data: '11' }],
-    [{ text: 'Dicembre', callback_data: '12' }],
+    [{ text: 'Gennaio' }],
+    [{ text: 'Febbraio' }],
+    [{ text: 'Marzo' }],
+    [{ text: 'Aprile' }],
+    [{ text: 'Maggio' }],
+    [{ text: 'Giugno' }],
+    [{ text: 'Luglio' }],
+    [{ text: 'Agosto' }],
+    [{ text: 'Settembre' }],
+    [{ text: 'Ottobre' }],
+    [{ text: 'Novembre' }],
+    [{ text: 'Dicembre' }],
 ];
+const months = {
+    Gennaio: '01',
+    Febbraio: '02',
+    Marzo: '03',
+    Aprile: '04',
+    Maggio: '05',
+    Giugno: '06',
+    Luglio: '07',
+    Agosto: '08',
+    Settembre: '09',
+    Ottobre: '10',
+    Novembre: '11',
+    Dicembre: '12',
+};

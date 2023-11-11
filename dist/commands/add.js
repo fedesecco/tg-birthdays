@@ -46,20 +46,20 @@ function addConversation(conversation, ctx) {
                 one_time_keyboard: true,
             },
         });
-        const inputDay = (yield conversation.waitFor(':text')).message.text;
+        const inputDay = (yield conversation.waitFor(':text')).callbackQuery.data;
         yield ctx.reply('E che mese?', {
             reply_markup: {
                 keyboard: monthButtons,
                 one_time_keyboard: true,
             },
         });
-        const inputMonth = (yield conversation.waitFor(':text')).message.text;
+        const inputMonth = (yield conversation.waitFor(':text')).callbackQuery.data;
         const inputDate = inputDay + '/' + inputMonth;
         try {
             yield bot_1.supabase
                 .from('birthdays')
                 .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
-            yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
+            yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDay} ${inputMonth}`);
         }
         catch (error) {
             console.log("Error on supabase.from('birthdays').insert: ", error);
@@ -80,7 +80,7 @@ function askName(conversation, ctx) {
 }
 const dayButtons = Array.from({ length: 31 }, (_, index) => {
     const day = (index + 1).toString().padStart(2, '0');
-    return [{ text: day, callback_data: `2023-01-${day}` }];
+    return [{ text: day, callback_data: `${day}` }];
 });
 const monthButtons = [
     [{ text: 'Gennaio', callback_data: '01' }],

@@ -35,7 +35,7 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
             one_time_keyboard: true,
         },
     });
-    const inputDay = (await conversation.waitFor(':text')).message.text;
+    const inputDay = (await conversation.waitFor(':text')).callbackQuery.data;
 
     await ctx.reply('E che mese?', {
         reply_markup: {
@@ -43,14 +43,14 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
             one_time_keyboard: true,
         },
     });
-    const inputMonth = (await conversation.waitFor(':text')).message.text;
+    const inputMonth = (await conversation.waitFor(':text')).callbackQuery.data;
     const inputDate = inputDay + '/' + inputMonth;
 
     try {
         await supabase
             .from('birthdays')
             .insert<BdayRow[]>([{ name: inputName, birthday: inputDate, owner: sender }]);
-        await ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
+        await ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDay} ${inputMonth}`);
     } catch (error) {
         console.log("Error on supabase.from('birthdays').insert: ", error);
         await ctx.reply(Messages.ErrorOnRequest);
@@ -69,7 +69,7 @@ async function askName(conversation: MyConversation, ctx: MyContext) {
 
 const dayButtons = Array.from({ length: 31 }, (_, index) => {
     const day = (index + 1).toString().padStart(2, '0');
-    return [{ text: day, callback_data: `2023-01-${day}` }];
+    return [{ text: day, callback_data: `${day}` }];
 });
 
 const monthButtons = [

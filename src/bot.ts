@@ -1,4 +1,4 @@
-import { Bot, webhookCallback } from 'grammy';
+import { Bot, session, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { Messages, Commands, UserRow, UserStatus, MyContext } from './enums';
@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import { buildBdaysMsg, isAdmin } from './utils';
 import { onAdd } from './commands/add';
 import { onDelete } from './commands/delete';
-import { createConversation } from '@grammyjs/conversations';
+import { conversations, createConversation } from '@grammyjs/conversations';
 import { addConversation, onTest } from './commands/test';
 
 dotenv.config();
@@ -72,20 +72,32 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
+/**
+ * TODO:
+ * - i18n
+ * - remove guidato
+ * - controlla compleanno da lista nomi
+ * - refactor data (forse)
+ * - forza messaggio compleanno del giorno
+ * - aggiorna lista comandi del bot da bot father
+ */
+
 //deploy
 if (process.env.NODE_ENV === 'production') {
-    // Use Webhooks for the production server
     const app = express();
     app.use(express.json());
     app.use(onRequest);
     app.use(webhookCallback(bot, 'express'));
+    /** conversations */
+    bot.use(session({ initial: () => ({}) }));
+    bot.use(conversations());
     bot.use(createConversation(addConversation));
+    /** listen */
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);
     });
 } else {
-    // Use Long Polling for development
     console.log(`Bot working on localhost`);
     bot.start();
 }

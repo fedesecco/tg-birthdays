@@ -13,18 +13,16 @@ var People;
 exports.admins = [People.Fede];
 var Commands;
 (function (Commands) {
-    Commands["help"] = "help";
     Commands["start"] = "start";
     Commands["test"] = "test";
     Commands["add"] = "add";
     Commands["delete"] = "remove";
     Commands["list"] = "list";
     Commands["bdays"] = "birthDaysOfTheDay";
+    Commands["triggerBdays"] = "today";
 })(Commands = exports.Commands || (exports.Commands = {}));
 var Messages;
 (function (Messages) {
-    Messages["Intro"] = "tbd";
-    Messages["Help"] = "Nessun aiuto a ancora disponibile.";
     Messages["Unauthorized"] = "Non sei autorizzato ad usare questo comando";
     Messages["WrongAddFormat"] = "Il testo inviato non \u00E8 nel formato corretto. Deve essere \"gg/mm nome\", tipo 03/04 Mario Rossi";
     Messages["TextTooLong"] = "Il testo \u00E8 troppo lungo";

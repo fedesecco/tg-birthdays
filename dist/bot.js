@@ -37,16 +37,24 @@ else
     console.log('Fail on login');
 exports.bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
-});
-exports.bot.command(enums_1.Commands.help, (ctx) => {
-    console.log('/help triggered');
-    ctx.reply(enums_1.Messages.Help, {
-        parse_mode: 'HTML',
-    });
+    (0, add_1.onAdd)(ctx);
 });
 exports.bot.command(enums_1.Commands.test, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/test triggered');
-    let sender = ctx.from.id;
+    const sender = ctx.from.id;
+    if (!(0, utils_1.isAdmin)(sender)) {
+        exports.bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
+    }
+    ctx.reply('Choose an option:', {
+        reply_markup: {
+            keyboard: [['Option 1', 'Option 2']],
+            one_time_keyboard: true,
+        },
+    });
+}));
+exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log('/today triggered');
+    const sender = ctx.from.id;
     const msg = (0, utils_1.isAdmin)(sender) ? yield (0, utils_1.buildBdaysMsg)(sender) : enums_1.Messages.Unauthorized;
     exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));

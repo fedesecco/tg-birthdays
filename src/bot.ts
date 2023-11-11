@@ -27,23 +27,28 @@ if (supabase.storage) {
 // start
 bot.command(Commands.start, (ctx) => {
     console.log('/start triggered');
-    /* ctx.reply(Messages.Intro, {
-        parse_mode: 'HTML',
-    }); */
-});
-
-// help
-bot.command(Commands.help, (ctx) => {
-    console.log('/help triggered');
-    ctx.reply(Messages.Help, {
-        parse_mode: 'HTML',
-    });
+    onAdd(ctx);
 });
 
 // test
 bot.command(Commands.test, async (ctx) => {
     console.log('/test triggered');
-    let sender = ctx.from.id;
+    const sender = ctx.from.id;
+    if (!isAdmin(sender)) {
+        bot.api.sendMessage(sender, Messages.Unauthorized);
+    }
+    ctx.reply('Choose an option:', {
+        reply_markup: {
+            keyboard: [['Option 1', 'Option 2']],
+            one_time_keyboard: true,
+        },
+    });
+});
+
+// today (manda i compleanni del giorno)
+bot.command(Commands.triggerBdays, async (ctx) => {
+    console.log('/today triggered');
+    const sender = ctx.from.id;
     const msg = isAdmin(sender) ? await buildBdaysMsg(sender) : Messages.Unauthorized;
     bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });

@@ -20,14 +20,14 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
 
     await ctx.reply('In che giorno compie gli anni?', {
         reply_markup: {
-            inline_keyboard: dayButtons,
+            keyboard: dayButtons,
         },
     });
     const inputDay = (await conversation.waitFor(':text')).message.text;
 
     await ctx.reply('E che mese?', {
         reply_markup: {
-            inline_keyboard: dayButtons,
+            keyboard: monthButtons,
         },
     });
     const inputMonth = (await conversation.waitFor(':text')).message.text;
@@ -60,24 +60,25 @@ const dayButtons = Array.from({ length: 31 }, (_, index) => {
 });
 
 const monthButtons = [
-    { text: 'January', callback_data: '01' },
-    { text: 'February', callback_data: '02' },
-    { text: 'March', callback_data: '03' },
-    { text: 'April', callback_data: '04' },
-    { text: 'May', callback_data: '05' },
-    { text: 'June', callback_data: '06' },
-    { text: 'July', callback_data: '07' },
-    { text: 'August', callback_data: '08' },
-    { text: 'September', callback_data: '09' },
-    { text: 'October', callback_data: '10' },
-    { text: 'November', callback_data: '11' },
-    { text: 'December', callback_data: '12' },
+    [{ text: 'January', callback_data: '01' }],
+    [{ text: 'February', callback_data: '02' }],
+    [{ text: 'March', callback_data: '03' }],
+    [{ text: 'April', callback_data: '04' }],
+    [{ text: 'May', callback_data: '05' }],
+    [{ text: 'June', callback_data: '06' }],
+    [{ text: 'July', callback_data: '07' }],
+    [{ text: 'August', callback_data: '08' }],
+    [{ text: 'September', callback_data: '09' }],
+    [{ text: 'October', callback_data: '10' }],
+    [{ text: 'November', callback_data: '11' }],
+    [{ text: 'December', callback_data: '12' }],
 ];
 
 // markup tastiera figa
 /* ctx.reply('Choose an option:', {
     reply_markup: {
         keyboard: [['Option 1', 'Option 2']],
+        inline_keyboard: [['Option 1', 'Option 2']],
         one_time_keyboard: true,
     },
 }); */

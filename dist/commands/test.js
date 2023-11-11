@@ -31,13 +31,13 @@ function addConversation(conversation, ctx) {
         const inputName = yield askName(conversation, ctx);
         yield ctx.reply('In che giorno compie gli anni?', {
             reply_markup: {
-                inline_keyboard: dayButtons,
+                keyboard: dayButtons,
             },
         });
         const inputDay = (yield conversation.waitFor(':text')).message.text;
         yield ctx.reply('E che mese?', {
             reply_markup: {
-                inline_keyboard: dayButtons,
+                keyboard: monthButtons,
             },
         });
         const inputMonth = (yield conversation.waitFor(':text')).message.text;
@@ -70,16 +70,16 @@ const dayButtons = Array.from({ length: 31 }, (_, index) => {
     return [{ text: day, callback_data: `2023-01-${day}` }];
 });
 const monthButtons = [
-    { text: 'January', callback_data: '01' },
-    { text: 'February', callback_data: '02' },
-    { text: 'March', callback_data: '03' },
-    { text: 'April', callback_data: '04' },
-    { text: 'May', callback_data: '05' },
-    { text: 'June', callback_data: '06' },
-    { text: 'July', callback_data: '07' },
-    { text: 'August', callback_data: '08' },
-    { text: 'September', callback_data: '09' },
-    { text: 'October', callback_data: '10' },
-    { text: 'November', callback_data: '11' },
-    { text: 'December', callback_data: '12' },
+    [{ text: 'January', callback_data: '01' }],
+    [{ text: 'February', callback_data: '02' }],
+    [{ text: 'March', callback_data: '03' }],
+    [{ text: 'April', callback_data: '04' }],
+    [{ text: 'May', callback_data: '05' }],
+    [{ text: 'June', callback_data: '06' }],
+    [{ text: 'July', callback_data: '07' }],
+    [{ text: 'August', callback_data: '08' }],
+    [{ text: 'September', callback_data: '09' }],
+    [{ text: 'October', callback_data: '10' }],
+    [{ text: 'November', callback_data: '11' }],
+    [{ text: 'December', callback_data: '12' }],
 ];

@@ -53,7 +53,8 @@ function addConversation(conversation, ctx) {
                 one_time_keyboard: true,
             },
         });
-        const inputMonth = months[(yield conversation.waitFor(':text')).message.text];
+        const inputMonth = (yield conversation.waitFor(':text')).message.text;
+        const numberMonth = months[inputMonth];
         const inputDate = inputDay + '/' + inputMonth;
         try {
             yield bot_1.supabase

@@ -43,7 +43,8 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
             one_time_keyboard: true,
         },
     });
-    const inputMonth = months[(await conversation.waitFor(':text')).message.text];
+    const inputMonth = (await conversation.waitFor(':text')).message.text;
+    const numberMonth = months[inputMonth];
     const inputDate = inputDay + '/' + inputMonth;
 
     try {

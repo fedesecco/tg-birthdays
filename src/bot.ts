@@ -17,9 +17,13 @@ if (!token) {
     console.error('No token!');
 }
 export const bot = new Bot<MyContext>(token);
-let storage: any;
+/** conversations */
+bot.use(session({ initial: () => ({}) }));
+bot.use(conversations());
+bot.use(createConversation(addConversation));
 
 // SUPABASE DATABASE INIT
+let storage: any;
 const app = express();
 export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 if (supabase.storage) {
@@ -88,10 +92,6 @@ if (process.env.NODE_ENV === 'production') {
     app.use(express.json());
     app.use(onRequest);
     app.use(webhookCallback(bot, 'express'));
-    /** conversations */
-    bot.use(session({ initial: () => ({}) }));
-    bot.use(conversations());
-    bot.use(createConversation(addConversation));
     /** listen */
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

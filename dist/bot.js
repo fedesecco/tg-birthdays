@@ -29,6 +29,9 @@ if (!token) {
     console.error('No token!');
 }
 exports.bot = new grammy_1.Bot(token);
+exports.bot.use((0, grammy_1.session)({ initial: () => ({}) }));
+exports.bot.use((0, conversations_1.conversations)());
+exports.bot.use((0, conversations_1.createConversation)(test_1.addConversation));
 let storage;
 const app = (0, express_1.default)();
 exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
@@ -75,9 +78,6 @@ if (process.env.NODE_ENV === 'production') {
     app.use(express_1.default.json());
     app.use(onRequest);
     app.use((0, grammy_1.webhookCallback)(exports.bot, 'express'));
-    exports.bot.use((0, grammy_1.session)({ initial: () => ({}) }));
-    exports.bot.use((0, conversations_1.conversations)());
-    exports.bot.use((0, conversations_1.createConversation)(test_1.addConversation));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);

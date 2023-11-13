@@ -1,7 +1,7 @@
 import { Bot, session, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { Messages, Commands, UserRow, UserStatus, MyContext } from './enums';
+import { Messages, Commands, UserRow, UserStatus, MyContext, People } from './enums';
 import { createClient } from '@supabase/supabase-js';
 import { buildBdaysMsg, isAdmin } from './utils';
 import { addConversation, onAdd } from './commands/add';
@@ -57,7 +57,7 @@ bot.command(Commands.delete, onDelete);
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method === 'POST' && req.path === `/${Commands.bdays}`) {
         console.log(`${Commands.bdays} triggered`);
-
+        bot.api.sendMessage(People.Fede, 'fsfsdfdsf');
         let { data, error } = await supabase
             .from('users')
             .select('*')
@@ -66,6 +66,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         console.log('First row of users: ', data[0]);
 
         const subscribedUsers: UserRow[] = data;
+        bot.api.sendMessage(People.Fede, subscribedUsers[0].name);
         const chats = subscribedUsers.map((user) => user.id);
         chats.forEach(async (subscriber) => {
             const msg = await buildBdaysMsg(subscriber);

@@ -57,7 +57,6 @@ bot.command(Commands.delete, onDelete);
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method === 'POST' && req.path === `/${Commands.bdays}`) {
         console.log(`${Commands.bdays} triggered`);
-        bot.api.sendMessage(People.Fede, 'fsfsdfdsf');
         let { data, error } = await supabase
             .from('users')
             .select('*')
@@ -66,12 +65,11 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         console.log('First row of users: ', data[0]);
 
         const subscribedUsers: UserRow[] = data;
-        bot.api.sendMessage(People.Fede, subscribedUsers[0].name);
         const chats = subscribedUsers.map((user) => user.id);
         chats.forEach(async (subscriber) => {
             const msg = await buildBdaysMsg(subscriber);
-            console.log(`Mi accingo ad inviare a ${subscriber} questo messaggio: `, msg);
-            bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
+            await bot.api.sendMessage(People.Fede, `Invio messaggio a ${subscriber}`);
+            await bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
         });
     }
     next();

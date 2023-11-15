@@ -56,7 +56,6 @@ exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
         console.log(`${enums_1.Commands.bdays} triggered`);
-        exports.bot.api.sendMessage(enums_1.People.Fede, 'fsfsdfdsf');
         let { data, error } = yield exports.supabase
             .from('users')
             .select('*')
@@ -65,12 +64,11 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             console.log('Error on supabase.from(users).select(): ', error);
         console.log('First row of users: ', data[0]);
         const subscribedUsers = data;
-        exports.bot.api.sendMessage(enums_1.People.Fede, subscribedUsers[0].name);
         const chats = subscribedUsers.map((user) => user.id);
         chats.forEach((subscriber) => __awaiter(void 0, void 0, void 0, function* () {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
-            console.log(`Mi accingo ad inviare a ${subscriber} questo messaggio: `, msg);
-            exports.bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
+            yield exports.bot.api.sendMessage(enums_1.People.Fede, `Invio messaggio a ${subscriber}`);
+            yield exports.bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
         }));
     }
     next();

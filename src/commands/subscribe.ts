@@ -1,6 +1,6 @@
 import { CommandContext } from 'grammy';
 import { supabase } from '../bot';
-import { Commands, UserRow, MyContext, UserStatus } from '../enums';
+import { Commands, UserRow, MyContext, UserStatus, Tables } from '../enums';
 
 export async function onSubscribe(ctx: CommandContext<MyContext>) {
     console.log(`${Commands.subscribe} triggered`);
@@ -14,7 +14,7 @@ export async function onSubscribe(ctx: CommandContext<MyContext>) {
         await ctx.reply('Sei già iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
     } else if (user.status === UserStatus.PAUSED) {
         const { error } = await supabase
-            .from('user')
+            .from(Tables.users)
             .update({ status: UserStatus.SUBSCRIBED })
             .eq('id', sender);
         if (error) console.log(`Error on update: `, error);

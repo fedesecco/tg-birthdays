@@ -1,6 +1,6 @@
 import { CommandContext } from 'grammy';
 import { supabase } from '../bot';
-import { Commands, UserRow, MyContext, UserStatus } from '../enums';
+import { Commands, UserRow, MyContext, UserStatus, Tables } from '../enums';
 
 export async function onUnsubscribe(ctx: CommandContext<MyContext>) {
     console.log(`${Commands.unsubscribe} triggered`);
@@ -14,7 +14,7 @@ export async function onUnsubscribe(ctx: CommandContext<MyContext>) {
         await ctx.reply('La tua iscrizione è già stata annullata!');
     } else if (user.status === UserStatus.SUBSCRIBED) {
         const { error } = await supabase
-            .from('user')
+            .from(Tables.users)
             .update({ status: UserStatus.PAUSED })
             .eq('id', sender);
         if (error) console.log(`Error on update: `, error);

@@ -34,6 +34,11 @@ export enum Messages {
     ErrorOnRequest = 'Errore nella richiesta :(',
 }
 
+export enum Tables {
+    birthdays = 'birthdays',
+    users = 'users',
+}
+
 export interface BdayRow {
     name: string;
     birthday: string;

@@ -23,6 +23,8 @@ export enum Commands {
     list = 'list',
     bdays = 'birthDaysOfTheDay',
     triggerBdays = 'today',
+    subscribe = 'subscribe',
+    unsubscribe = 'unsubscribe',
 }
 
 export enum Messages {

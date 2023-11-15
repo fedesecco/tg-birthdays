@@ -8,6 +8,8 @@ import { addConversation, onAdd } from './commands/add';
 import { onDelete } from './commands/delete';
 import { conversations, createConversation } from '@grammyjs/conversations';
 import { onTest } from './commands/test';
+import { onSubscribe } from './commands/subscribe';
+import { onUnsubscribe } from './commands/unsubscribe';
 
 dotenv.config();
 
@@ -47,11 +49,10 @@ bot.command(Commands.triggerBdays, async (ctx) => {
     await bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });
 
-// add
 bot.command(Commands.add, onAdd);
-
-// remove
 bot.command(Commands.delete, onDelete);
+bot.command(Commands.subscribe, onSubscribe);
+bot.command(Commands.unsubscribe, onUnsubscribe);
 
 // API calls from cyclic
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {

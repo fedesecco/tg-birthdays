@@ -23,6 +23,8 @@ const add_1 = require("./commands/add");
 const delete_1 = require("./commands/delete");
 const conversations_1 = require("@grammyjs/conversations");
 const test_1 = require("./commands/test");
+const subscribe_1 = require("./commands/subscribe");
+const unsubscribe_1 = require("./commands/unsubscribe");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -53,6 +55,8 @@ exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, vo
 }));
 exports.bot.command(enums_1.Commands.add, add_1.onAdd);
 exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
+exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);
+exports.bot.command(enums_1.Commands.unsubscribe, unsubscribe_1.onUnsubscribe);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
         console.log(`${enums_1.Commands.bdays} triggered`);

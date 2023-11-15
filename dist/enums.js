@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Convs = exports.UserStatus = exports.UserRoles = exports.Messages = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
+exports.Convs = exports.UserStatus = exports.UserRoles = exports.Tables = exports.Messages = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
 var Chats;
 (function (Chats) {
     Chats[Chats["GruppoTest"] = -927488637] = "GruppoTest";
@@ -30,6 +30,11 @@ var Messages;
     Messages["TextTooLong"] = "Il testo \u00E8 troppo lungo";
     Messages["ErrorOnRequest"] = "Errore nella richiesta :(";
 })(Messages = exports.Messages || (exports.Messages = {}));
+var Tables;
+(function (Tables) {
+    Tables["birthdays"] = "birthdays";
+    Tables["users"] = "users";
+})(Tables = exports.Tables || (exports.Tables = {}));
 var UserRoles;
 (function (UserRoles) {
     UserRoles["ADMIN"] = "ADMIN";

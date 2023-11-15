@@ -25,7 +25,7 @@ function onSubscribe(ctx) {
         }
         else if (user.status === enums_1.UserStatus.PAUSED) {
             const { error } = yield bot_1.supabase
-                .from('user')
+                .from(enums_1.Tables.users)
                 .update({ status: enums_1.UserStatus.SUBSCRIBED })
                 .eq('id', sender);
             if (error)

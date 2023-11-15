@@ -1,13 +1,13 @@
 import { CommandContext } from 'grammy';
-import { bot, supabase } from '../bot';
-import { BdayRow, Convs, Messages, MyContext, MyConversation } from '../enums';
+import { bot } from '../bot';
+import { Convs, Messages, MyContext } from '../enums';
 import { isAdmin } from '../utils';
 
 export async function onTest(ctx: CommandContext<MyContext>) {
     console.log('/test triggered');
     const sender = ctx.from.id;
     if (!isAdmin(sender)) {
-        bot.api.sendMessage(sender, Messages.Unauthorized);
+        await bot.api.sendMessage(sender, Messages.Unauthorized);
     }
 
     await ctx.conversation.enter(Convs.addConversation);

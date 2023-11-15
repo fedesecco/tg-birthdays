@@ -18,7 +18,7 @@ function onTest(ctx) {
         console.log('/test triggered');
         const sender = ctx.from.id;
         if (!(0, utils_1.isAdmin)(sender)) {
-            bot_1.bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
+            yield bot_1.bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
         }
         yield ctx.conversation.enter(enums_1.Convs.addConversation);
     });

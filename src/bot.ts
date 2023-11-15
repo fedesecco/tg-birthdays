@@ -44,7 +44,7 @@ bot.command(Commands.triggerBdays, async (ctx) => {
     console.log('/today triggered');
     const sender = ctx.from.id;
     const msg = isAdmin(sender) ? await buildBdaysMsg(sender) : Messages.Unauthorized;
-    bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
+    await bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });
 
 // add
@@ -80,9 +80,8 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
  * - i18n
  * - remove guidato
  * - controlla compleanno da lista nomi
- * - refactor data (forse)
  * - forza messaggio compleanno del giorno
- * - aggiorna lista comandi del bot da bot father
+ * - sub/unsub
  */
 
 //deploy

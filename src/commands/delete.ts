@@ -18,11 +18,11 @@ export async function onDelete(ctx: CommandContext<Context>) {
             `Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`,
             error
         );
-        bot.api.sendMessage(sender, Messages.ErrorOnRequest);
+        await bot.api.sendMessage(sender, Messages.ErrorOnRequest);
     } else if (count && count > 0) {
-        bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
+        await bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
     } else {
         console.log(`Count: ${count}`);
-        bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
+        await bot.api.sendMessage(sender, `Non ho trovato nessuno con nome "${nameToDel}"`);
     }
 }

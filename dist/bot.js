@@ -49,7 +49,7 @@ exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, vo
     console.log('/today triggered');
     const sender = ctx.from.id;
     const msg = (0, utils_1.isAdmin)(sender) ? yield (0, utils_1.buildBdaysMsg)(sender) : enums_1.Messages.Unauthorized;
-    exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
+    yield exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));
 exports.bot.command(enums_1.Commands.add, add_1.onAdd);
 exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);

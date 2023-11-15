@@ -17,7 +17,7 @@ export async function onAdd(ctx: CommandContext<MyContext>) {
             await supabase.from('users').insert<UserRow[]>([{ id: sender, name: senderName }]);
         } catch (error) {
             console.log("Error on supabase.from('users').insert: ", error);
-            bot.api.sendMessage(sender, Messages.ErrorOnRequest);
+            await bot.api.sendMessage(sender, Messages.ErrorOnRequest);
         }
     }
 
@@ -102,35 +102,3 @@ const months: { [key: string]: string } = {
     Novembre: '11',
     Dicembre: '12',
 };
-
-// old add
-/* const inputText = ctx.message.text.substring(5);
-
-const inputDate = inputText.slice(0, 5);
-const inputDay0 = inputText.slice(0, 1);
-const inputDay1 = inputText.slice(1, 2);
-const inputDivider = inputText.slice(2, 3);
-const inputMonth0 = inputText.slice(3, 4);
-const inputMonth1 = inputText.slice(4, 5);
-const inputName = inputText.slice(5).trim();
-if (inputText.length > 36) {
-    bot.api.sendMessage(sender, Messages.TextTooLong);
-} else if (
-    !['0', '1', '2', '3'].includes(inputDay0) ||
-    !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputDay1) ||
-    !['0', '1'].includes(inputMonth0) ||
-    !['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(inputMonth1) ||
-    inputDivider != '/'
-) {
-    bot.api.sendMessage(sender, Messages.WrongAddFormat);
-} else {
-    try {
-        await supabase
-            .from('birthdays')
-            .insert<BdayRow[]>([{ name: inputName, birthday: inputDate, owner: sender }]);
-        bot.api.sendMessage(sender, `Aggiunto/a ${inputName} con compleanno il ${inputDate}`);
-    } catch (error) {
-        console.log("Error on supabase.from('birthdays').insert: ", error);
-        bot.api.sendMessage(sender, Messages.ErrorOnRequest);
-    }
-} */

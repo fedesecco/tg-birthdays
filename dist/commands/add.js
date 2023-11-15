@@ -28,7 +28,7 @@ function onAdd(ctx) {
             }
             catch (error) {
                 console.log("Error on supabase.from('users').insert: ", error);
-                bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
+                yield bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
             }
         }
         yield ctx.conversation.enter(enums_1.Convs.addConversation);

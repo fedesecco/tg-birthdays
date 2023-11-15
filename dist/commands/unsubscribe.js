@@ -28,9 +28,13 @@ function onUnsubscribe(ctx) {
                 .from(enums_1.Tables.users)
                 .update({ status: enums_1.UserStatus.PAUSED })
                 .eq('id', sender);
-            if (error)
+            if (error) {
                 console.log(`Error on update: `, error);
-            yield ctx.reply('La tua iscrizione è stata annullata!');
+                yield ctx.reply(enums_1.Messages.ErrorOnRequest);
+            }
+            else {
+                yield ctx.reply('La tua iscrizione è stata annullata!');
+            }
         }
     });
 }

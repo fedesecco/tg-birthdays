@@ -28,9 +28,13 @@ function onSubscribe(ctx) {
                 .from(enums_1.Tables.users)
                 .update({ status: enums_1.UserStatus.SUBSCRIBED })
                 .eq('id', sender);
-            if (error)
+            if (error) {
                 console.log(`Error on update: `, error);
-            yield ctx.reply('Sei di nuovo iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+                yield ctx.reply(enums_1.Messages.ErrorOnRequest);
+            }
+            else {
+                yield ctx.reply('Sei di nuovo iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+            }
         }
     });
 }

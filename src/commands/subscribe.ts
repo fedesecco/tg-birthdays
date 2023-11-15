@@ -1,6 +1,6 @@
 import { CommandContext } from 'grammy';
 import { supabase } from '../bot';
-import { Commands, UserRow, MyContext, UserStatus, Tables } from '../enums';
+import { Commands, UserRow, MyContext, UserStatus, Tables, Messages } from '../enums';
 
 export async function onSubscribe(ctx: CommandContext<MyContext>) {
     console.log(`${Commands.subscribe} triggered`);
@@ -17,9 +17,13 @@ export async function onSubscribe(ctx: CommandContext<MyContext>) {
             .from(Tables.users)
             .update({ status: UserStatus.SUBSCRIBED })
             .eq('id', sender);
-        if (error) console.log(`Error on update: `, error);
-        await ctx.reply(
-            'Sei di nuovo iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55'
-        );
+        if (error) {
+            console.log(`Error on update: `, error);
+            await ctx.reply(Messages.ErrorOnRequest);
+        } else {
+            await ctx.reply(
+                'Sei di nuovo iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55'
+            );
+        }
     }
 }

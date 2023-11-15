@@ -20,8 +20,8 @@ var Commands;
     Commands["list"] = "list";
     Commands["bdays"] = "birthDaysOfTheDay";
     Commands["triggerBdays"] = "today";
-    Commands["subscribe"] = "subscribe";
-    Commands["unsubscribe"] = "unsubscribe";
+    Commands["subscribe"] = "sub";
+    Commands["unsubscribe"] = "unsub";
 })(Commands = exports.Commands || (exports.Commands = {}));
 var Messages;
 (function (Messages) {

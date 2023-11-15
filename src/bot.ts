@@ -82,7 +82,6 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
  * - remove guidato
  * - controlla compleanno da lista nomi
  * - forza messaggio compleanno del giorno
- * - sub/unsub
  */
 
 //deploy

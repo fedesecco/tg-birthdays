@@ -62,21 +62,13 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
             .select('*')
             .eq('status', UserStatus.SUBSCRIBED);
         if (error) console.log('Error on supabase.from(users).select(): ', error);
-        console.log('First row of users: ', data[0]);
 
         const subscribedUsers: UserRow[] = data;
         const chats = subscribedUsers.map((user) => user.id);
-        await bot.api.sendMessage(
-            People.Fede,
-            `chats: ${chats[0]}, ${chats[1] ?? 'null'}, ${chats[2] ?? 'null'} `
-        );
-        chats.forEach(async (subscriber) => {
+        for (const subscriber of chats) {
             const msg = await buildBdaysMsg(subscriber);
-            await bot.api.sendMessage(People.Fede, `Invio messaggio a ${subscriber}`);
-            await new Promise((resolve) => setTimeout(resolve, 10000));
-            await bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
-            await new Promise((resolve) => setTimeout(resolve, 10000));
-        });
+            await bot.api.sendMessage(subscriber, msg);
+        }
     }
     next();
 };

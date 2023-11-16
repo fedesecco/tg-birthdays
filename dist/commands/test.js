@@ -29,10 +29,11 @@ function onTest(ctx) {
         console.log('First row of users: ', data[0]);
         const subscribedUsers = data;
         const chats = subscribedUsers.map((user) => user.id);
-        chats.forEach((subscriber) => __awaiter(this, void 0, void 0, function* () {
+        console.log('Chats: ', chats);
+        for (const subscriber of chats) {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             yield bot_1.bot.api.sendMessage(enums_1.People.Fede, `Invio messaggio a ${subscriber}`);
-        }));
+        }
     });
 }
 exports.onTest = onTest;

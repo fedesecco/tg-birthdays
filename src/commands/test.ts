@@ -16,13 +16,13 @@ export async function onTest(ctx: CommandContext<MyContext>) {
         .eq('status', UserStatus.SUBSCRIBED);
     if (error) console.log('Error on supabase.from(users).select(): ', error);
     console.log('First row of users: ', data[0]);
-
     const subscribedUsers: UserRow[] = data;
     const chats = subscribedUsers.map((user) => user.id);
-    chats.forEach(async (subscriber) => {
+    console.log('Chats: ', chats);
+    for (const subscriber of chats) {
         const msg = await buildBdaysMsg(subscriber);
         await bot.api.sendMessage(People.Fede, `Invio messaggio a ${subscriber}`);
-    });
+    }
 }
 
 // markup tastiera figa

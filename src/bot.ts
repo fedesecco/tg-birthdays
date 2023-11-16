@@ -38,9 +38,6 @@ bot.command(Commands.start, (ctx) => {
     onAdd(ctx);
 });
 
-// test
-bot.command(Commands.test, onTest);
-
 // today (manda i compleanni del giorno)
 bot.command(Commands.triggerBdays, async (ctx) => {
     console.log('/today triggered');
@@ -49,6 +46,8 @@ bot.command(Commands.triggerBdays, async (ctx) => {
     await bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });
 
+// test
+bot.command(Commands.test, onTest);
 bot.command(Commands.add, onAdd);
 bot.command(Commands.delete, onDelete);
 bot.command(Commands.subscribe, onSubscribe);

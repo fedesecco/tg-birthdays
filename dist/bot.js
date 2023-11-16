@@ -46,13 +46,13 @@ exports.bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
     (0, add_1.onAdd)(ctx);
 });
-exports.bot.command(enums_1.Commands.test, test_1.onTest);
 exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/today triggered');
     const sender = ctx.from.id;
     const msg = yield (0, utils_1.buildBdaysMsg)(sender);
     yield exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));
+exports.bot.command(enums_1.Commands.test, test_1.onTest);
 exports.bot.command(enums_1.Commands.add, add_1.onAdd);
 exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);

@@ -1,7 +1,7 @@
 import { CommandContext } from 'grammy';
-import { bot } from '../bot';
-import { Convs, Messages, MyContext } from '../enums';
-import { isAdmin } from '../utils';
+import { bot, supabase } from '../bot';
+import { Messages, MyContext, People, UserRow, UserStatus } from '../enums';
+import { buildBdaysMsg, isAdmin } from '../utils';
 
 export async function onTest(ctx: CommandContext<MyContext>) {
     console.log('/test triggered');
@@ -10,7 +10,19 @@ export async function onTest(ctx: CommandContext<MyContext>) {
         await bot.api.sendMessage(sender, Messages.Unauthorized);
     }
 
-    await ctx.conversation.enter(Convs.addConversation);
+    let { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('status', UserStatus.SUBSCRIBED);
+    if (error) console.log('Error on supabase.from(users).select(): ', error);
+    console.log('First row of users: ', data[0]);
+
+    const subscribedUsers: UserRow[] = data;
+    const chats = subscribedUsers.map((user) => user.id);
+    chats.forEach(async (subscriber) => {
+        const msg = await buildBdaysMsg(subscriber);
+        await bot.api.sendMessage(People.Fede, `Invio messaggio a ${subscriber}`);
+    });
 }
 
 // markup tastiera figa

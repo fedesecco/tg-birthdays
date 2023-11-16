@@ -11,7 +11,7 @@ export async function onSubscribe(ctx: CommandContext<MyContext>) {
 
     const user: UserRow = data[0];
     if (user.status == UserStatus.SUBSCRIBED) {
-        await ctx.reply('Sei già iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+        await ctx.reply('Sei già iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
     } else if (user.status === UserStatus.PAUSED) {
         const { error } = await supabase
             .from(Tables.users)
@@ -22,7 +22,7 @@ export async function onSubscribe(ctx: CommandContext<MyContext>) {
             await ctx.reply(Messages.ErrorOnRequest);
         } else {
             await ctx.reply(
-                'Sei di nuovo iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55'
+                'Sei di nuovo iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55'
             );
         }
     }

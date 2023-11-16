@@ -20,7 +20,19 @@ function onTest(ctx) {
         if (!(0, utils_1.isAdmin)(sender)) {
             yield bot_1.bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
         }
-        yield ctx.conversation.enter(enums_1.Convs.addConversation);
+        let { data, error } = yield bot_1.supabase
+            .from('users')
+            .select('*')
+            .eq('status', enums_1.UserStatus.SUBSCRIBED);
+        if (error)
+            console.log('Error on supabase.from(users).select(): ', error);
+        console.log('First row of users: ', data[0]);
+        const subscribedUsers = data;
+        const chats = subscribedUsers.map((user) => user.id);
+        chats.forEach((subscriber) => __awaiter(this, void 0, void 0, function* () {
+            const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
+            yield bot_1.bot.api.sendMessage(enums_1.People.Fede, `Invio messaggio a ${subscriber}`);
+        }));
     });
 }
 exports.onTest = onTest;

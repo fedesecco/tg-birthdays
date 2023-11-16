@@ -50,7 +50,7 @@ exports.bot.command(enums_1.Commands.test, test_1.onTest);
 exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
     console.log('/today triggered');
     const sender = ctx.from.id;
-    const msg = (0, utils_1.isAdmin)(sender) ? yield (0, utils_1.buildBdaysMsg)(sender) : enums_1.Messages.Unauthorized;
+    const msg = yield (0, utils_1.buildBdaysMsg)(sender);
     yield exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 }));
 exports.bot.command(enums_1.Commands.add, add_1.onAdd);
@@ -58,6 +58,7 @@ exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);
 exports.bot.command(enums_1.Commands.unsubscribe, unsubscribe_1.onUnsubscribe);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a, _b;
     if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
         console.log(`${enums_1.Commands.bdays} triggered`);
         let { data, error } = yield exports.supabase
@@ -69,10 +70,13 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         console.log('First row of users: ', data[0]);
         const subscribedUsers = data;
         const chats = subscribedUsers.map((user) => user.id);
+        yield exports.bot.api.sendMessage(enums_1.People.Fede, `chats: ${chats[0]}, ${(_a = chats[1]) !== null && _a !== void 0 ? _a : 'null'}, ${(_b = chats[2]) !== null && _b !== void 0 ? _b : 'null'} `);
         chats.forEach((subscriber) => __awaiter(void 0, void 0, void 0, function* () {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             yield exports.bot.api.sendMessage(enums_1.People.Fede, `Invio messaggio a ${subscriber}`);
+            yield new Promise((resolve) => setTimeout(resolve, 10000));
             yield exports.bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
+            yield new Promise((resolve) => setTimeout(resolve, 10000));
         }));
     }
     next();

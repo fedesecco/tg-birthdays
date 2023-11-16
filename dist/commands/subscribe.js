@@ -21,7 +21,7 @@ function onSubscribe(ctx) {
             console.log(`Error on from('users').select('*').eq('id', ${sender}): `, error);
         const user = data[0];
         if (user.status == enums_1.UserStatus.SUBSCRIBED) {
-            yield ctx.reply('Sei già iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+            yield ctx.reply('Sei già iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
         }
         else if (user.status === enums_1.UserStatus.PAUSED) {
             const { error } = yield bot_1.supabase
@@ -33,7 +33,7 @@ function onSubscribe(ctx) {
                 yield ctx.reply(enums_1.Messages.ErrorOnRequest);
             }
             else {
-                yield ctx.reply('Sei di nuovo iscritto! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+                yield ctx.reply('Sei di nuovo iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
             }
         }
     });

@@ -1,9 +1,9 @@
 import { Bot, session, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { Messages, Commands, UserRow, UserStatus, MyContext, People } from './enums';
+import { Commands, UserRow, UserStatus, MyContext, People } from './enums';
 import { createClient } from '@supabase/supabase-js';
-import { buildBdaysMsg, isAdmin } from './utils';
+import { buildBdaysMsg } from './utils';
 import { addConversation, onAdd } from './commands/add';
 import { onDelete } from './commands/delete';
 import { conversations, createConversation } from '@grammyjs/conversations';
@@ -45,7 +45,7 @@ bot.command(Commands.test, onTest);
 bot.command(Commands.triggerBdays, async (ctx) => {
     console.log('/today triggered');
     const sender = ctx.from.id;
-    const msg = isAdmin(sender) ? await buildBdaysMsg(sender) : Messages.Unauthorized;
+    const msg = await buildBdaysMsg(sender);
     await bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
 });
 
@@ -67,10 +67,16 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
 
         const subscribedUsers: UserRow[] = data;
         const chats = subscribedUsers.map((user) => user.id);
+        await bot.api.sendMessage(
+            People.Fede,
+            `chats: ${chats[0]}, ${chats[1] ?? 'null'}, ${chats[2] ?? 'null'} `
+        );
         chats.forEach(async (subscriber) => {
             const msg = await buildBdaysMsg(subscriber);
             await bot.api.sendMessage(People.Fede, `Invio messaggio a ${subscriber}`);
+            await new Promise((resolve) => setTimeout(resolve, 10000));
             await bot.api.sendMessage(subscriber, msg, { parse_mode: 'HTML' });
+            await new Promise((resolve) => setTimeout(resolve, 10000));
         });
     }
     next();

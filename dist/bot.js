@@ -26,6 +26,7 @@ const test_1 = require("./commands/test");
 const subscribe_1 = require("./commands/subscribe");
 const unsubscribe_1 = require("./commands/unsubscribe");
 const testCron_1 = require("./requests/testCron");
+const bdaysOfTheDay_1 = require("./requests/bdaysOfTheDay");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -59,22 +60,10 @@ exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);
 exports.bot.command(enums_1.Commands.unsubscribe, unsubscribe_1.onUnsubscribe);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.method === 'POST' && req.path === `/${enums_1.Commands.bdays}`) {
-        console.log(`${enums_1.Commands.bdays} triggered`);
-        let { data, error } = yield exports.supabase
-            .from('users')
-            .select('*')
-            .eq('status', enums_1.UserStatus.SUBSCRIBED);
-        if (error)
-            console.log('Error on supabase.from(users).select(): ', error);
-        const subscribedUsers = data;
-        const chats = subscribedUsers.map((user) => user.id);
-        for (const subscriber of chats) {
-            const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
-            yield exports.bot.api.sendMessage(subscriber, msg);
-        }
+    if (req.method === 'POST' && req.path === enums_1.Requests.bdays) {
+        yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();
     }
-    else if (req.method === 'POST' && req.path === `/testCron`) {
+    else if (req.method === 'POST' && req.path === enums_1.Requests.test) {
         yield (0, testCron_1.onTestCron)();
     }
     next();

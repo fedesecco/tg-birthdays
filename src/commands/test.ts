@@ -10,19 +10,7 @@ export async function onTest(ctx: CommandContext<MyContext>) {
         await bot.api.sendMessage(sender, Messages.Unauthorized);
     }
 
-    let { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('status', UserStatus.SUBSCRIBED);
-    if (error) console.log('Error on supabase.from(users).select(): ', error);
-    console.log('First row of users: ', data[0]);
-    const subscribedUsers: UserRow[] = data;
-    const chats = subscribedUsers.map((user) => user.id);
-    console.log('Chats: ', chats);
-    for (const subscriber of chats) {
-        const msg = await buildBdaysMsg(subscriber);
-        await bot.api.sendMessage(People.Fede, `Invio messaggio a ${subscriber}`);
-    }
+    ctx.reply(`Your language is ${ctx.from.language_code}`);
 }
 
 // markup tastiera figa

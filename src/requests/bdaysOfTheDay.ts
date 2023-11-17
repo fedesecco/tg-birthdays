@@ -1,9 +1,9 @@
 import { supabase, bot } from '../bot';
-import { UserStatus, UserRow, People, Requests } from '../enums';
+import { UserStatus, UserRow, Requests } from '../enums';
 import { buildBdaysMsg } from '../utils';
 
-export async function onTestCron() {
-    console.log(`${Requests.test} triggered`);
+export async function onBirthDaysOfTheDay() {
+    console.log(`${Requests.bdays} triggered`);
     let { data, error } = await supabase
         .from('users')
         .select('*')
@@ -14,6 +14,6 @@ export async function onTestCron() {
     const chats = subscribedUsers.map((user) => user.id);
     for (const subscriber of chats) {
         const msg = await buildBdaysMsg(subscriber);
-        await bot.api.sendMessage(People.Fede, msg);
+        await bot.api.sendMessage(subscriber, msg);
     }
 }

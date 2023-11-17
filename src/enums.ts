@@ -21,10 +21,14 @@ export enum Commands {
     add = 'add',
     delete = 'remove',
     list = 'list',
-    bdays = 'birthDaysOfTheDay',
     triggerBdays = 'today',
     subscribe = 'sub',
     unsubscribe = 'unsub',
+}
+
+export enum Requests {
+    bdays = '/birthDaysOfTheDay',
+    test = '/testCron',
 }
 
 export enum Messages {

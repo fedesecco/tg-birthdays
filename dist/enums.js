@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Convs = exports.UserStatus = exports.UserRoles = exports.Tables = exports.Messages = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
+exports.Convs = exports.UserStatus = exports.UserRoles = exports.Tables = exports.Messages = exports.Requests = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
 var Chats;
 (function (Chats) {
     Chats[Chats["GruppoTest"] = -927488637] = "GruppoTest";
@@ -18,11 +18,15 @@ var Commands;
     Commands["add"] = "add";
     Commands["delete"] = "remove";
     Commands["list"] = "list";
-    Commands["bdays"] = "birthDaysOfTheDay";
     Commands["triggerBdays"] = "today";
     Commands["subscribe"] = "sub";
     Commands["unsubscribe"] = "unsub";
 })(Commands = exports.Commands || (exports.Commands = {}));
+var Requests;
+(function (Requests) {
+    Requests["bdays"] = "/birthDaysOfTheDay";
+    Requests["test"] = "/testCron";
+})(Requests = exports.Requests || (exports.Requests = {}));
 var Messages;
 (function (Messages) {
     Messages["Unauthorized"] = "Non sei autorizzato ad usare questo comando";

@@ -20,7 +20,10 @@ function onTest(ctx) {
         if (!(0, utils_1.isAdmin)(sender)) {
             yield bot_1.bot.api.sendMessage(sender, enums_1.Messages.Unauthorized);
         }
-        ctx.reply(`Your language is ${ctx.from.language_code}`);
+        else {
+            console.log(`Your language is ${ctx.from.language_code}`);
+            yield ctx.reply(`Your language is ${ctx.from.language_code}`);
+        }
     });
 }
 exports.onTest = onTest;

@@ -38,7 +38,9 @@ exports.bot.use((0, conversations_1.conversations)());
 exports.bot.use((0, conversations_1.createConversation)(add_1.addConversation));
 let storage;
 const app = (0, express_1.default)();
-exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+    auth: { persistSession: false },
+});
 if (exports.supabase.storage) {
     console.log(`Login successful.`);
 }

@@ -25,6 +25,7 @@ const conversations_1 = require("@grammyjs/conversations");
 const test_1 = require("./commands/test");
 const subscribe_1 = require("./commands/subscribe");
 const unsubscribe_1 = require("./commands/unsubscribe");
+const testCron_1 = require("./requests/testCron");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -72,6 +73,9 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             yield exports.bot.api.sendMessage(subscriber, msg);
         }
+    }
+    else if (req.method === 'POST' && req.path === `/testCron`) {
+        yield (0, testCron_1.onTestCron)();
     }
     next();
 });

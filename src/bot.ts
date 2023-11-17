@@ -10,6 +10,7 @@ import { conversations, createConversation } from '@grammyjs/conversations';
 import { onTest } from './commands/test';
 import { onSubscribe } from './commands/subscribe';
 import { onUnsubscribe } from './commands/unsubscribe';
+import { onTestCron } from './requests/testCron';
 
 dotenv.config();
 
@@ -69,6 +70,8 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
             const msg = await buildBdaysMsg(subscriber);
             await bot.api.sendMessage(subscriber, msg);
         }
+    } else if (req.method === 'POST' && req.path === `/testCron`) {
+        await onTestCron();
     }
     next();
 };

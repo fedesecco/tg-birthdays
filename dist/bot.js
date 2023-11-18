@@ -18,7 +18,6 @@ const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const enums_1 = require("./enums");
 const supabase_js_1 = require("@supabase/supabase-js");
-const utils_1 = require("./utils");
 const add_1 = require("./commands/add");
 const delete_1 = require("./commands/delete");
 const conversations_1 = require("@grammyjs/conversations");
@@ -27,6 +26,7 @@ const subscribe_1 = require("./commands/subscribe");
 const unsubscribe_1 = require("./commands/unsubscribe");
 const testCron_1 = require("./requests/testCron");
 const bdaysOfTheDay_1 = require("./requests/bdaysOfTheDay");
+const today_1 = require("./commands/today");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -50,12 +50,7 @@ exports.bot.command(enums_1.Commands.start, (ctx) => {
     console.log('/start triggered');
     (0, add_1.onAdd)(ctx);
 });
-exports.bot.command(enums_1.Commands.triggerBdays, (ctx) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log('/today triggered');
-    const sender = ctx.from.id;
-    const msg = yield (0, utils_1.buildBdaysMsg)(sender);
-    yield exports.bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
-}));
+exports.bot.command(enums_1.Commands.triggerBdays, today_1.onToday);
 exports.bot.command(enums_1.Commands.test, test_1.onTest);
 exports.bot.command(enums_1.Commands.add, add_1.onAdd);
 exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);

@@ -14,6 +14,8 @@ export async function onTestCron() {
     const chats = subscribedUsers.map((user) => user.id);
     for (const subscriber of chats) {
         const msg = await buildBdaysMsg(subscriber);
-        await bot.api.sendMessage(People.Fede, msg);
+        if (msg) {
+            await bot.api.sendMessage(People.Fede, msg);
+        }
     }
 }

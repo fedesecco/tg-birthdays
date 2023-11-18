@@ -12,6 +12,7 @@ import { onSubscribe } from './commands/subscribe';
 import { onUnsubscribe } from './commands/unsubscribe';
 import { onTestCron } from './requests/testCron';
 import { onBirthDaysOfTheDay } from './requests/bdaysOfTheDay';
+import { onToday } from './commands/today';
 
 dotenv.config();
 
@@ -42,14 +43,7 @@ bot.command(Commands.start, (ctx) => {
     onAdd(ctx);
 });
 
-// today (manda i compleanni del giorno)
-bot.command(Commands.triggerBdays, async (ctx) => {
-    console.log('/today triggered');
-    const sender = ctx.from.id;
-    const msg = await buildBdaysMsg(sender);
-    await bot.api.sendMessage(sender, msg, { parse_mode: 'HTML' });
-});
-
+bot.command(Commands.triggerBdays, onToday);
 bot.command(Commands.test, onTest);
 bot.command(Commands.add, onAdd);
 bot.command(Commands.delete, onDelete);
@@ -71,7 +65,6 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
  * - i18n
  * - remove guidato
  * - controlla compleanno da lista nomi
- * - forza messaggio compleanno del giorno
  */
 
 //deploy

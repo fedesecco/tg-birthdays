@@ -26,7 +26,9 @@ function onBirthDaysOfTheDay() {
         const chats = subscribedUsers.map((user) => user.id);
         for (const subscriber of chats) {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
-            yield bot_1.bot.api.sendMessage(subscriber, msg);
+            if (msg) {
+                yield bot_1.bot.api.sendMessage(subscriber, msg);
+            }
         }
     });
 }

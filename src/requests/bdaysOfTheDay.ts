@@ -14,6 +14,8 @@ export async function onBirthDaysOfTheDay() {
     const chats = subscribedUsers.map((user) => user.id);
     for (const subscriber of chats) {
         const msg = await buildBdaysMsg(subscriber);
-        await bot.api.sendMessage(subscriber, msg);
+        if (msg) {
+            await bot.api.sendMessage(subscriber, msg);
+        }
     }
 }

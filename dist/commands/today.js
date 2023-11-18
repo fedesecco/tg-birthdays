@@ -9,27 +9,20 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onTestCron = void 0;
-const bot_1 = require("../bot");
+exports.onToday = void 0;
 const enums_1 = require("../enums");
 const utils_1 = require("../utils");
-function onTestCron() {
+function onToday(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`${enums_1.Requests.test} triggered`);
-        let { data, error } = yield bot_1.supabase
-            .from('users')
-            .select('*')
-            .eq('status', enums_1.UserStatus.SUBSCRIBED);
-        if (error)
-            console.log('Error on supabase.from(users).select(): ', error);
-        const subscribedUsers = data;
-        const chats = subscribedUsers.map((user) => user.id);
-        for (const subscriber of chats) {
-            const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
-            if (msg) {
-                yield bot_1.bot.api.sendMessage(enums_1.People.Fede, msg);
-            }
+        console.log(`${enums_1.Commands.unsubscribe} triggered`);
+        const sender = ctx.from.id;
+        const msg = yield (0, utils_1.buildBdaysMsg)(sender);
+        if (msg) {
+            ctx.reply(msg);
+        }
+        else {
+            ctx.reply('Non ci sono compleanni oggi');
         }
     });
 }
-exports.onTestCron = onTestCron;
+exports.onToday = onToday;

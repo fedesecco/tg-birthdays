@@ -22,21 +22,21 @@ function isAdmin(texter) {
 exports.isAdmin = isAdmin;
 function buildBdaysMsg(owner) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { data, error } = yield bot_1.supabase.from('birthdays').select('*').eq('owner', owner);
+        const rawDate = new Date();
+        const day = rawDate.getDate().toString().padStart(2, '0');
+        const month = (rawDate.getMonth() + 1).toString().padStart(2, '0');
+        const today = `${day}/${month}`;
+        let { data, error } = yield bot_1.supabase
+            .from(enums_1.Tables.birthdays)
+            .select('*')
+            .eq('birthday', today)
+            .eq('owner', owner);
         if (error)
             console.log('Error on supabase.from(birthdays).select(): ', error);
-        let typedData = data;
-        const rowDate = new Date();
-        const day = rowDate.getDate().toString().padStart(2, '0');
-        const month = (rowDate.getMonth() + 1).toString().padStart(2, '0');
-        const today = `${day}/${month}`;
-        let bdays = [];
-        bdays = typedData.filter((row) => {
-            return row.birthday === today;
-        });
+        let bdays = data;
         let msg = '';
         if (bdays.length === 0) {
-            msg = 'Non ci sono compleanni oggi';
+            msg = null;
         }
         else if (bdays.length === 1) {
             msg = `Oggi compie gli anni ${bdays[0].name}`;

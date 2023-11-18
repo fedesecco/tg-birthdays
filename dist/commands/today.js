@@ -14,14 +14,14 @@ const enums_1 = require("../enums");
 const utils_1 = require("../utils");
 function onToday(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`${enums_1.Commands.unsubscribe} triggered`);
+        console.log(`${enums_1.Commands.triggerBdays} triggered`);
         const sender = ctx.from.id;
         const msg = yield (0, utils_1.buildBdaysMsg)(sender);
         if (msg) {
-            ctx.reply(msg);
+            yield ctx.reply(msg);
         }
         else {
-            ctx.reply('Non ci sono compleanni oggi');
+            yield ctx.reply('Non ci sono compleanni oggi');
         }
     });
 }

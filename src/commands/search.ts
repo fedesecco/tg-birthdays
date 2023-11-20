@@ -4,7 +4,7 @@ import { getNamesTable } from '../utils';
 
 export async function onSearch(ctx: CommandContext<MyContext>) {
     console.log(`${Commands.search} triggered`);
-    await ctx.conversation.enter(Convs.deleteConversation);
+    await ctx.conversation.enter(Convs.searchConversation);
 }
 
 export async function searchConversation(conversation: MyConversation, ctx: MyContext) {

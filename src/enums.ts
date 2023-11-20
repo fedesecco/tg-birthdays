@@ -69,7 +69,7 @@ export interface UserRow {
 export enum Convs {
     addConversation = 'addConversation',
     deleteConversation = 'deleteConversation',
-    findConversation = 'findConversation',
+    searchConversation = 'searchConversation',
 }
 
 export const monthToNumber: { [key: string]: string } = {

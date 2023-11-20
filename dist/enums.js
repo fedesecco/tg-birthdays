@@ -53,7 +53,7 @@ var Convs;
 (function (Convs) {
     Convs["addConversation"] = "addConversation";
     Convs["deleteConversation"] = "deleteConversation";
-    Convs["findConversation"] = "findConversation";
+    Convs["searchConversation"] = "searchConversation";
 })(Convs = exports.Convs || (exports.Convs = {}));
 exports.monthToNumber = {
     Gennaio: '01',

@@ -15,7 +15,7 @@ const utils_1 = require("../utils");
 function onSearch(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`${enums_1.Commands.search} triggered`);
-        yield ctx.conversation.enter(enums_1.Convs.deleteConversation);
+        yield ctx.conversation.enter(enums_1.Convs.searchConversation);
     });
 }
 exports.onSearch = onSearch;

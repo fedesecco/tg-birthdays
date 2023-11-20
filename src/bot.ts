@@ -1,9 +1,8 @@
 import { Bot, session, webhookCallback } from 'grammy';
 import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
-import { Commands, MyContext, Requests } from './enums';
+import { Commands, FullContext, MyContext, Requests } from './enums';
 import { createClient } from '@supabase/supabase-js';
-import { buildBdaysMsg } from './utils';
 import { addConversation, onAdd } from './commands/add';
 import { onDelete } from './commands/delete';
 import { conversations, createConversation } from '@grammyjs/conversations';
@@ -13,6 +12,7 @@ import { onUnsubscribe } from './commands/unsubscribe';
 import { onTestCron } from './requests/testCron';
 import { onBirthDaysOfTheDay } from './requests/bdaysOfTheDay';
 import { onToday } from './commands/today';
+import { I18n } from '@grammyjs/i18n';
 
 dotenv.config();
 
@@ -21,11 +21,18 @@ const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
     console.error('No token!');
 }
-export const bot = new Bot<MyContext>(token);
-/** conversations */
+export const bot = new Bot<FullContext>(token);
 bot.use(session({ initial: () => ({}) }));
+/** conversations */
 bot.use(conversations());
 bot.use(createConversation(addConversation));
+/** i18n */
+const i18n = new I18n<MyContext>({
+    defaultLocale: 'it',
+    useSession: false,
+    directory: 'assets/locales',
+});
+bot.use(i18n);
 
 // SUPABASE DATABASE INIT
 let storage: any;

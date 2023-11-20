@@ -1,5 +1,5 @@
 import { supabase } from './bot';
-import { BdayRow, Tables, admins } from './enums';
+import { BdayRow, FullContext, Tables, admins } from './enums';
 
 export function randomNumber(min: number, max: number) {
     return Math.floor(Math.random() * (max - min + 1) + min);
@@ -9,7 +9,7 @@ export function isAdmin(texter: number) {
     return admins.includes(texter);
 }
 
-export async function buildBdaysMsg(owner: number): Promise<string | null> {
+export async function buildBdaysMsg(owner: number, ctx: FullContext): Promise<string | null> {
     const rawDate = new Date();
     const day = rawDate.getDate().toString().padStart(2, '0');
     const month = (rawDate.getMonth() + 1).toString().padStart(2, '0');
@@ -27,9 +27,9 @@ export async function buildBdaysMsg(owner: number): Promise<string | null> {
     if (bdays.length === 0) {
         msg = null;
     } else if (bdays.length === 1) {
-        msg = `Oggi compie gli anni ${bdays[0].name}`;
+        msg = ctx.t('bdayMsg.singular') + bdays[0].name;
     } else if (bdays.length > 1) {
-        msg = 'Oggi compiono gli anni';
+        msg = ctx.t('bdayMsg.plural');
         bdays.forEach((bday, i) => {
             msg += ` ${bday.name}`;
             i < bdays.length ? (msg += ', ') : (msg += '.');

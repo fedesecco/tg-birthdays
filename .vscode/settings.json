@@ -1,5 +1,7 @@
 {
     "editor.formatOnSaveMode": "file",
     "editor.tabSize": 4,
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "i18n-ally.keystyle": "flat",
+    "i18n-ally.localesPaths": "src/assets/locales"
 }

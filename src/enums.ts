@@ -1,8 +1,10 @@
 import { ConversationFlavor, Conversation } from '@grammyjs/conversations';
+import { I18nFlavor } from '@grammyjs/i18n';
 import { Context } from 'grammy';
 
 export type MyContext = Context & ConversationFlavor;
 export type MyConversation = Conversation<MyContext>;
+export type FullContext = Context & ConversationFlavor & I18nFlavor;
 
 export enum Chats {
     GruppoTest = -927488637,
@@ -29,13 +31,6 @@ export enum Commands {
 export enum Requests {
     bdays = '/birthDaysOfTheDay',
     test = '/testCron',
-}
-
-export enum Messages {
-    Unauthorized = 'Non sei autorizzato ad usare questo comando',
-    WrongAddFormat = 'Il testo inviato non è nel formato corretto. Deve essere "gg/mm nome", tipo 03/04 Mario Rossi',
-    TextTooLong = 'Il testo è troppo lungo',
-    ErrorOnRequest = 'Errore nella richiesta :(',
 }
 
 export enum Tables {

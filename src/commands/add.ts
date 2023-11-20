@@ -1,8 +1,16 @@
 import { CommandContext } from 'grammy';
 import { supabase, bot } from '../bot';
-import { Commands, UserRow, Messages, BdayRow, MyContext, MyConversation, Convs } from '../enums';
+import {
+    Commands,
+    UserRow,
+    BdayRow,
+    MyContext,
+    MyConversation,
+    Convs,
+    FullContext,
+} from '../enums';
 
-export async function onAdd(ctx: CommandContext<MyContext>) {
+export async function onAdd(ctx: CommandContext<FullContext>) {
     console.log(`${Commands.add} triggered`);
     const sender = ctx.from.id;
     const senderName = ctx.from.first_name;
@@ -17,7 +25,7 @@ export async function onAdd(ctx: CommandContext<MyContext>) {
             await supabase.from('users').insert<UserRow[]>([{ id: sender, name: senderName }]);
         } catch (error) {
             console.log("Error on supabase.from('users').insert: ", error);
-            await bot.api.sendMessage(sender, Messages.ErrorOnRequest);
+            await bot.api.sendMessage(sender, ctx.t('global.error.errorOnRequest'));
         }
     }
 

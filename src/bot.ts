@@ -12,6 +12,7 @@ import { onUnsubscribe } from './commands/unsubscribe';
 import { onTestCron } from './requests/testCron';
 import { onBirthDaysOfTheDay } from './requests/bdaysOfTheDay';
 import { onToday } from './commands/today';
+import { onSearch, searchConversation } from './commands/search';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 bot.use(createConversation(addConversation));
 bot.use(createConversation(deleteConversation));
+bot.use(createConversation(searchConversation));
 
 // SUPABASE DATABASE INIT
 let storage: any;
@@ -49,6 +51,7 @@ bot.command(Commands.add, onAdd);
 bot.command(Commands.delete, onDelete);
 bot.command(Commands.subscribe, onSubscribe);
 bot.command(Commands.unsubscribe, onUnsubscribe);
+bot.command(Commands.search, onSearch);
 
 // API calls from cyclic
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
@@ -63,8 +66,6 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
 /**
  * TODO:
  * - i18n
- * - remove guidato
- * - controlla compleanno da lista nomi
  */
 
 //deploy

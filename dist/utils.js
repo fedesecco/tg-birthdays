@@ -64,11 +64,23 @@ function getNamesTable(user) {
         let names = bdayRows.map((row) => {
             return row.name;
         });
-        let result = [];
+        let keyboard = [];
         names.forEach((name) => {
-            result.push([{ text: name }]);
+            keyboard.push([{ text: name }]);
         });
-        return result;
+        keyboard.sort((a, b) => {
+            const textA = a[0].text.toUpperCase();
+            const textB = b[0].text.toUpperCase();
+            if (textA < textB) {
+                return -1;
+            }
+            else if (textA > textB) {
+                return 1;
+            }
+            else
+                return 0;
+        });
+        return { keyboard: keyboard, rawData: bdayRows };
     });
 }
 exports.getNamesTable = getNamesTable;

@@ -42,16 +42,27 @@ export async function buildBdaysMsg(owner: number): Promise<string | null> {
     return msg;
 }
 
-export async function getNamesTable(user: number): Promise<KeyboardButton[][]> {
+export async function getNamesTable(
+    user: number
+): Promise<{ keyboard: KeyboardButton[][]; rawData: BdayRow[] }> {
     let { data, error } = await supabase.from(Tables.birthdays).select('*').eq('owner', user);
     if (error) console.log('Error on supabase.from(birthdays).select(): ', error);
     let bdayRows = data as BdayRow[];
     let names = bdayRows.map((row) => {
         return row.name;
     });
-    let result = [];
+    let keyboard = [];
     names.forEach((name) => {
-        result.push([{ text: name }]);
+        keyboard.push([{ text: name }]);
     });
-    return result;
+    keyboard.sort((a, b) => {
+        const textA = a[0].text.toUpperCase();
+        const textB = b[0].text.toUpperCase();
+        if (textA < textB) {
+            return -1;
+        } else if (textA > textB) {
+            return 1;
+        } else return 0;
+    });
+    return { keyboard: keyboard, rawData: bdayRows };
 }

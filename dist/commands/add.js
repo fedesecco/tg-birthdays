@@ -54,7 +54,7 @@ function addConversation(conversation, ctx) {
             },
         });
         const inputMonth = (yield conversation.waitFor(':text')).message.text;
-        const numberMonth = months[inputMonth];
+        const numberMonth = enums_1.monthToNumber[inputMonth];
         const inputDate = inputDay + '/' + numberMonth;
         try {
             yield bot_1.supabase
@@ -97,17 +97,3 @@ const monthButtons = [
     [{ text: 'Novembre' }],
     [{ text: 'Dicembre' }],
 ];
-const months = {
-    Gennaio: '01',
-    Febbraio: '02',
-    Marzo: '03',
-    Aprile: '04',
-    Maggio: '05',
-    Giugno: '06',
-    Luglio: '07',
-    Agosto: '08',
-    Settembre: '09',
-    Ottobre: '10',
-    Novembre: '11',
-    Dicembre: '12',
-};

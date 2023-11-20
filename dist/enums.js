@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.Convs = exports.UserStatus = exports.UserRoles = exports.Tables = exports.Messages = exports.Requests = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
+exports.numberToMonth = exports.monthToNumber = exports.Convs = exports.UserStatus = exports.UserRoles = exports.Tables = exports.Messages = exports.Requests = exports.Commands = exports.admins = exports.People = exports.Chats = void 0;
 var Chats;
 (function (Chats) {
     Chats[Chats["GruppoTest"] = -927488637] = "GruppoTest";
@@ -17,7 +17,7 @@ var Commands;
     Commands["test"] = "test";
     Commands["add"] = "add";
     Commands["delete"] = "remove";
-    Commands["list"] = "list";
+    Commands["search"] = "search";
     Commands["triggerBdays"] = "today";
     Commands["subscribe"] = "sub";
     Commands["unsubscribe"] = "unsub";
@@ -55,3 +55,31 @@ var Convs;
     Convs["deleteConversation"] = "deleteConversation";
     Convs["findConversation"] = "findConversation";
 })(Convs = exports.Convs || (exports.Convs = {}));
+exports.monthToNumber = {
+    Gennaio: '01',
+    Febbraio: '02',
+    Marzo: '03',
+    Aprile: '04',
+    Maggio: '05',
+    Giugno: '06',
+    Luglio: '07',
+    Agosto: '08',
+    Settembre: '09',
+    Ottobre: '10',
+    Novembre: '11',
+    Dicembre: '12',
+};
+exports.numberToMonth = {
+    '01': 'Gennaio',
+    '02': 'Febbraio',
+    '03': 'Marzo',
+    '04': 'Aprile',
+    '05': 'Maggio',
+    '06': 'Giugno',
+    '07': 'Luglio',
+    '08': 'Agosto',
+    '09': 'Settembre',
+    '10': 'Ottobre',
+    '11': 'Novembre',
+    '12': 'Dicembre',
+};

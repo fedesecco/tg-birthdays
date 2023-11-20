@@ -27,6 +27,7 @@ const unsubscribe_1 = require("./commands/unsubscribe");
 const testCron_1 = require("./requests/testCron");
 const bdaysOfTheDay_1 = require("./requests/bdaysOfTheDay");
 const today_1 = require("./commands/today");
+const search_1 = require("./commands/search");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
@@ -37,6 +38,7 @@ exports.bot.use((0, grammy_1.session)({ initial: () => ({}) }));
 exports.bot.use((0, conversations_1.conversations)());
 exports.bot.use((0, conversations_1.createConversation)(add_1.addConversation));
 exports.bot.use((0, conversations_1.createConversation)(delete_1.deleteConversation));
+exports.bot.use((0, conversations_1.createConversation)(search_1.searchConversation));
 let storage;
 const app = (0, express_1.default)();
 exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
@@ -57,6 +59,7 @@ exports.bot.command(enums_1.Commands.add, add_1.onAdd);
 exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);
 exports.bot.command(enums_1.Commands.unsubscribe, unsubscribe_1.onUnsubscribe);
+exports.bot.command(enums_1.Commands.search, search_1.onSearch);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === enums_1.Requests.bdays) {
         yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();

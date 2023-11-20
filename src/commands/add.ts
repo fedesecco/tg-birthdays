@@ -1,6 +1,15 @@
 import { CommandContext } from 'grammy';
 import { supabase, bot } from '../bot';
-import { Commands, UserRow, Messages, BdayRow, MyContext, MyConversation, Convs } from '../enums';
+import {
+    Commands,
+    UserRow,
+    Messages,
+    BdayRow,
+    MyContext,
+    MyConversation,
+    Convs,
+    monthToNumber,
+} from '../enums';
 
 export async function onAdd(ctx: CommandContext<MyContext>) {
     console.log(`${Commands.add} triggered`);
@@ -44,7 +53,7 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
         },
     });
     const inputMonth = (await conversation.waitFor(':text')).message.text;
-    const numberMonth = months[inputMonth];
+    const numberMonth = monthToNumber[inputMonth];
     const inputDate = inputDay + '/' + numberMonth;
 
     try {
@@ -87,18 +96,3 @@ const monthButtons = [
     [{ text: 'Novembre' }],
     [{ text: 'Dicembre' }],
 ];
-
-const months: { [key: string]: string } = {
-    Gennaio: '01',
-    Febbraio: '02',
-    Marzo: '03',
-    Aprile: '04',
-    Maggio: '05',
-    Giugno: '06',
-    Luglio: '07',
-    Agosto: '08',
-    Settembre: '09',
-    Ottobre: '10',
-    Novembre: '11',
-    Dicembre: '12',
-};

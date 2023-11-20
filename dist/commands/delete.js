@@ -23,7 +23,7 @@ exports.onDelete = onDelete;
 function deleteConversation(conversation, ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         const sender = ctx.from.id;
-        const namesToChooseFromKeyboard = yield (0, utils_1.getNamesTable)(sender);
+        const namesToChooseFromKeyboard = (yield (0, utils_1.getNamesTable)(sender)).keyboard;
         yield ctx.reply('Chi vuoi dimenticare?', {
             reply_markup: {
                 keyboard: namesToChooseFromKeyboard,

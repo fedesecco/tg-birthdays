@@ -10,7 +10,7 @@ export async function onDelete(ctx: CommandContext<MyContext>) {
 
 export async function deleteConversation(conversation: MyConversation, ctx: MyContext) {
     const sender = ctx.from.id;
-    const namesToChooseFromKeyboard = await getNamesTable(sender);
+    const namesToChooseFromKeyboard = (await getNamesTable(sender)).keyboard;
     await ctx.reply('Chi vuoi dimenticare?', {
         reply_markup: {
             keyboard: namesToChooseFromKeyboard,

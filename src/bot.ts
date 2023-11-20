@@ -3,9 +3,8 @@ import express, { Request, Response, NextFunction } from 'express';
 import dotenv from 'dotenv';
 import { Commands, MyContext, Requests } from './enums';
 import { createClient } from '@supabase/supabase-js';
-import { buildBdaysMsg } from './utils';
 import { addConversation, onAdd } from './commands/add';
-import { onDelete } from './commands/delete';
+import { deleteConversation, onDelete } from './commands/delete';
 import { conversations, createConversation } from '@grammyjs/conversations';
 import { onTest } from './commands/test';
 import { onSubscribe } from './commands/subscribe';
@@ -26,6 +25,7 @@ export const bot = new Bot<MyContext>(token);
 bot.use(session({ initial: () => ({}) }));
 bot.use(conversations());
 bot.use(createConversation(addConversation));
+bot.use(createConversation(deleteConversation));
 
 // SUPABASE DATABASE INIT
 let storage: any;

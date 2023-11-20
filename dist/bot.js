@@ -36,6 +36,7 @@ exports.bot = new grammy_1.Bot(token);
 exports.bot.use((0, grammy_1.session)({ initial: () => ({}) }));
 exports.bot.use((0, conversations_1.conversations)());
 exports.bot.use((0, conversations_1.createConversation)(add_1.addConversation));
+exports.bot.use((0, conversations_1.createConversation)(delete_1.deleteConversation));
 let storage;
 const app = (0, express_1.default)();
 exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {

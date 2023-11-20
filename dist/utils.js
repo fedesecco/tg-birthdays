@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildBdaysMsg = exports.isAdmin = exports.randomNumber = void 0;
+exports.getNamesTable = exports.buildBdaysMsg = exports.isAdmin = exports.randomNumber = void 0;
 const bot_1 = require("./bot");
 const enums_1 = require("./enums");
 function randomNumber(min, max) {
@@ -55,3 +55,20 @@ function buildBdaysMsg(owner) {
     });
 }
 exports.buildBdaysMsg = buildBdaysMsg;
+function getNamesTable(user) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let { data, error } = yield bot_1.supabase.from(enums_1.Tables.birthdays).select('*').eq('owner', user);
+        if (error)
+            console.log('Error on supabase.from(birthdays).select(): ', error);
+        let bdayRows = data;
+        let names = bdayRows.map((row) => {
+            return row.name;
+        });
+        let result = [];
+        names.forEach((name) => {
+            result.push([{ text: name }]);
+        });
+        return result;
+    });
+}
+exports.getNamesTable = getNamesTable;

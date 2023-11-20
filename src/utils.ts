@@ -1,3 +1,4 @@
+import { KeyboardButton } from 'grammy/types';
 import { supabase } from './bot';
 import { BdayRow, Tables, admins } from './enums';
 
@@ -39,4 +40,18 @@ export async function buildBdaysMsg(owner: number): Promise<string | null> {
     }
 
     return msg;
+}
+
+export async function getNamesTable(user: number): Promise<KeyboardButton[][]> {
+    let { data, error } = await supabase.from(Tables.birthdays).select('*').eq('owner', user);
+    if (error) console.log('Error on supabase.from(birthdays).select(): ', error);
+    let bdayRows = data as BdayRow[];
+    let names = bdayRows.map((row) => {
+        return row.name;
+    });
+    let result = [];
+    names.forEach((name) => {
+        result.push([{ text: name }]);
+    });
+    return result;
 }

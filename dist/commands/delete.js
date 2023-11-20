@@ -9,15 +9,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onDelete = void 0;
+exports.deleteConversation = exports.onDelete = void 0;
 const enums_1 = require("../enums");
 const bot_1 = require("../bot");
+const utils_1 = require("../utils");
 function onDelete(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`${enums_1.Commands.delete} triggered`);
+        yield ctx.conversation.enter(enums_1.Convs.deleteConversation);
+    });
+}
+exports.onDelete = onDelete;
+function deleteConversation(conversation, ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
         const sender = ctx.from.id;
-        const nameToDel = ctx.message.text.substring(8).trim();
-        const { count, error } = yield bot_1.supabase
+        const namesToChooseFromKeyboard = yield (0, utils_1.getNamesTable)(sender);
+        yield ctx.reply('Chi vuoi dimenticare?', {
+            reply_markup: {
+                keyboard: namesToChooseFromKeyboard,
+                one_time_keyboard: true,
+            },
+        });
+        const nameToDel = (yield conversation.waitFor(':text')).message.text;
+        let { count, error } = yield bot_1.supabase
             .from('birthdays')
             .delete({ count: 'exact' })
             .eq('owner', sender)
@@ -27,7 +41,7 @@ function onDelete(ctx) {
             yield bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
         }
         else if (count && count > 0) {
-            yield bot_1.bot.api.sendMessage(sender, `Compleanno di "${nameToDel}" rimosso con successo`);
+            yield bot_1.bot.api.sendMessage(sender, `"${nameToDel}" rimosso con successo`);
         }
         else {
             console.log(`Count: ${count}`);
@@ -35,4 +49,4 @@ function onDelete(ctx) {
         }
     });
 }
-exports.onDelete = onDelete;
+exports.deleteConversation = deleteConversation;

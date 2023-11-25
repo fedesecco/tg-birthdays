@@ -58,13 +58,10 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         await onBirthDaysOfTheDay();
     } else if (req.method === 'POST' && req.path === Requests.test) {
         await onTestCron();
-        console.log('asdfsfasfsfsdfds');
     }
-    console.log(req);
     res.status(200);
-    res.send('222222222');
+    res.send('done');
     next();
-    console.log('3333333333333');
 };
 
 /**

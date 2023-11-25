@@ -61,7 +61,10 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         console.log('asdfsfasfsfsdfds');
     }
     console.log(req);
+    res.status(200);
+    res.send('222222222');
     next();
+    console.log('3333333333333');
 };
 
 /**

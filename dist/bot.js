@@ -66,6 +66,7 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
     }
     else if (req.method === 'POST' && req.path === enums_1.Requests.test) {
         yield (0, testCron_1.onTestCron)();
+        console.log('asdfsfasfsfsdfds');
     }
     next();
 });

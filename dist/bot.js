@@ -40,7 +40,6 @@ exports.bot.use((0, conversations_1.createConversation)(add_1.addConversation));
 exports.bot.use((0, conversations_1.createConversation)(delete_1.deleteConversation));
 exports.bot.use((0, conversations_1.createConversation)(search_1.searchConversation));
 let storage;
-const app = (0, express_1.default)();
 exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
     auth: { persistSession: false },
 });
@@ -68,6 +67,7 @@ const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function
         yield (0, testCron_1.onTestCron)();
         console.log('asdfsfasfsfsdfds');
     }
+    console.log(req);
     next();
 });
 if (process.env.NODE_ENV === 'production') {

@@ -31,7 +31,6 @@ bot.use(createConversation(searchConversation));
 
 // SUPABASE DATABASE INIT
 let storage: any;
-const app = express();
 export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
     auth: { persistSession: false },
 });
@@ -61,6 +60,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         await onTestCron();
         console.log('asdfsfasfsfsdfds');
     }
+    console.log(req);
     next();
 };
 

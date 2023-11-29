@@ -40,7 +40,6 @@ exports.bot.use((0, conversations_1.createConversation)(add_1.addConversation));
 exports.bot.use((0, conversations_1.createConversation)(delete_1.deleteConversation));
 exports.bot.use((0, conversations_1.createConversation)(search_1.searchConversation));
 let storage;
-const app = (0, express_1.default)();
 exports.supabase = (0, supabase_js_1.createClient)(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
     auth: { persistSession: false },
 });
@@ -63,15 +62,18 @@ exports.bot.command(enums_1.Commands.search, search_1.onSearch);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (req.method === 'POST' && req.path === enums_1.Requests.bdays) {
         yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();
+        res.status(200);
+        res.send('done');
     }
     else if (req.method === 'POST' && req.path === enums_1.Requests.test) {
         yield (0, testCron_1.onTestCron)();
+        res.status(200);
+        res.send('done');
     }
-    res.status(200);
-    res.send('done');
     next();
 });
 if (process.env.NODE_ENV === 'production') {
+    const app = (0, express_1.default)();
     app.use(express_1.default.json());
     app.use(onRequest);
     app.use((0, grammy_1.webhookCallback)(exports.bot, 'express'));

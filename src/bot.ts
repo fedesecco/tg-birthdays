@@ -31,7 +31,6 @@ bot.use(createConversation(searchConversation));
 
 // SUPABASE DATABASE INIT
 let storage: any;
-const app = express();
 export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
     auth: { persistSession: false },
 });
@@ -57,11 +56,13 @@ bot.command(Commands.search, onSearch);
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method === 'POST' && req.path === Requests.bdays) {
         await onBirthDaysOfTheDay();
+        res.status(200);
+        res.send('done');
     } else if (req.method === 'POST' && req.path === Requests.test) {
         await onTestCron();
+        res.status(200);
+        res.send('done');
     }
-    res.status(200);
-    res.send('done');
     next();
 };
 
@@ -72,6 +73,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
 
 //deploy
 if (process.env.NODE_ENV === 'production') {
+    const app = express();
     app.use(express.json());
     app.use(onRequest);
     app.use(webhookCallback(bot, 'express'));

@@ -17,14 +17,13 @@ function onAdd(ctx) {
         console.log(`${enums_1.Commands.add} triggered`);
         const sender = ctx.from.id;
         const senderName = ctx.from.first_name;
-        let { data, error } = yield bot_1.supabase.from('users').select('*');
+        let { data, error } = yield bot_1.supabase.from("users").select("*");
         if (error)
-            console.log('Error on supabase.from(users).select(): ', error);
-        const userRows = data;
-        const users = userRows.map((userRow) => userRow.id);
+            console.log("Error on supabase.from(users).select(): ", error);
+        const users = data.map((userRow) => userRow.id);
         if (!users.includes(sender)) {
             try {
-                yield bot_1.supabase.from('users').insert([{ id: sender, name: senderName }]);
+                yield bot_1.supabase.from("users").insert([{ id: sender, name: senderName }]);
             }
             catch (error) {
                 console.log("Error on supabase.from('users').insert: ", error);
@@ -38,28 +37,26 @@ exports.onAdd = onAdd;
 function addConversation(conversation, ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         const sender = ctx.from.id;
-        yield ctx.reply('Chi vuoi aggiungere?');
+        yield ctx.reply("Chi vuoi aggiungere?");
         const inputName = yield askName(conversation, ctx);
-        yield ctx.reply('In che giorno compie gli anni?', {
+        yield ctx.reply("In che giorno compie gli anni?", {
             reply_markup: {
                 keyboard: dayButtons,
                 one_time_keyboard: true,
             },
         });
-        const inputDay = (yield conversation.waitFor(':text')).message.text;
-        yield ctx.reply('E che mese?', {
+        const inputDay = (yield conversation.waitFor(":text")).message.text;
+        yield ctx.reply("E che mese?", {
             reply_markup: {
                 keyboard: monthButtons,
                 one_time_keyboard: true,
             },
         });
-        const inputMonth = (yield conversation.waitFor(':text')).message.text;
+        const inputMonth = (yield conversation.waitFor(":text")).message.text;
         const numberMonth = enums_1.monthToNumber[inputMonth];
-        const inputDate = inputDay + '/' + numberMonth;
+        const inputDate = inputDay + "/" + numberMonth;
         try {
-            yield bot_1.supabase
-                .from('birthdays')
-                .insert([{ name: inputName, birthday: inputDate, owner: sender }]);
+            yield bot_1.supabase.from("birthdays").insert([{ name: inputName, birthday: inputDate, owner: sender }]);
             yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDay} ${inputMonth}`);
         }
         catch (error) {
@@ -71,7 +68,7 @@ function addConversation(conversation, ctx) {
 exports.addConversation = addConversation;
 function askName(conversation, ctx) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = (yield conversation.waitFor(':text')).message.text;
+        let result = (yield conversation.waitFor(":text")).message.text;
         if (result.length > 50) {
             yield ctx.reply(`Name trppo lungo! Ho la memoria breve io. Re-inseriscilo`);
             result = yield askName(conversation, ctx);
@@ -80,20 +77,20 @@ function askName(conversation, ctx) {
     });
 }
 const dayButtons = Array.from({ length: 31 }, (_, index) => {
-    const day = (index + 1).toString().padStart(2, '0');
+    const day = (index + 1).toString().padStart(2, "0");
     return [{ text: day, callback_data: `${day}` }];
 });
 const monthButtons = [
-    [{ text: 'Gennaio' }],
-    [{ text: 'Febbraio' }],
-    [{ text: 'Marzo' }],
-    [{ text: 'Aprile' }],
-    [{ text: 'Maggio' }],
-    [{ text: 'Giugno' }],
-    [{ text: 'Luglio' }],
-    [{ text: 'Agosto' }],
-    [{ text: 'Settembre' }],
-    [{ text: 'Ottobre' }],
-    [{ text: 'Novembre' }],
-    [{ text: 'Dicembre' }],
+    [{ text: "Gennaio" }],
+    [{ text: "Febbraio" }],
+    [{ text: "Marzo" }],
+    [{ text: "Aprile" }],
+    [{ text: "Maggio" }],
+    [{ text: "Giugno" }],
+    [{ text: "Luglio" }],
+    [{ text: "Agosto" }],
+    [{ text: "Settembre" }],
+    [{ text: "Ottobre" }],
+    [{ text: "Novembre" }],
+    [{ text: "Dicembre" }],
 ];

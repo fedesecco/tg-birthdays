@@ -16,14 +16,10 @@ const utils_1 = require("../utils");
 function onTestCron() {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`${enums_1.Requests.test} triggered`);
-        let { data, error } = yield bot_1.supabase
-            .from('users')
-            .select('*')
-            .eq('status', enums_1.UserStatus.SUBSCRIBED);
+        let { data, error } = yield bot_1.supabase.from("users").select("*").eq("status", "SUBSCRIBED");
         if (error)
-            console.log('Error on supabase.from(users).select(): ', error);
-        const subscribedUsers = data;
-        const chats = subscribedUsers.map((user) => user.id);
+            console.log("Error on supabase.from(users).select(): ", error);
+        const chats = data.map((user) => user.id);
         for (const subscriber of chats) {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             if (msg) {

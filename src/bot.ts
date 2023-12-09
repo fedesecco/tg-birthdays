@@ -13,6 +13,7 @@ import { onTestCron } from './requests/testCron';
 import { onBirthDaysOfTheDay } from './requests/bdaysOfTheDay';
 import { onToday } from './commands/today';
 import { onSearch, searchConversation } from './commands/search';
+import { Database } from './schema';
 
 dotenv.config();
 
@@ -31,7 +32,7 @@ bot.use(createConversation(searchConversation));
 
 // SUPABASE DATABASE INIT
 let storage: any;
-export const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+export const supabase = createClient<Database>(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
     auth: { persistSession: false },
 });
 if (supabase.storage) {

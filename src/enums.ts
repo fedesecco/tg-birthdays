@@ -38,34 +38,6 @@ export enum Messages {
     ErrorOnRequest = 'Errore nella richiesta :(',
 }
 
-export enum Tables {
-    birthdays = 'birthdays',
-    users = 'users',
-}
-
-export interface BdayRow {
-    name: string;
-    birthday: string;
-    owner: number;
-}
-
-export enum UserRoles {
-    ADMIN = 'ADMIN',
-    PLEB = 'PLEB',
-}
-
-export enum UserStatus {
-    SUBSCRIBED = 'SUBSCRIBED',
-    PAUSED = 'PAUSED',
-}
-
-export interface UserRow {
-    id: number;
-    status?: UserStatus;
-    role?: UserRoles;
-    name?: string;
-}
-
 export enum Convs {
     addConversation = 'addConversation',
     deleteConversation = 'deleteConversation',

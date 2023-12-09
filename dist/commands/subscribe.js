@@ -16,24 +16,21 @@ function onSubscribe(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`${enums_1.Commands.subscribe} triggered`);
         const sender = ctx.from.id;
-        let { data, error } = yield bot_1.supabase.from('users').select('*').eq('id', sender);
+        let { data, error } = yield bot_1.supabase.from("users").select("*").eq("id", sender);
         if (error)
             console.log(`Error on from('users').select('*').eq('id', ${sender}): `, error);
         const user = data[0];
-        if (user.status == enums_1.UserStatus.SUBSCRIBED) {
-            yield ctx.reply('Sei già iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+        if (user.status == "SUBSCRIBED") {
+            yield ctx.reply("Sei già iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55");
         }
-        else if (user.status === enums_1.UserStatus.PAUSED) {
-            const { error } = yield bot_1.supabase
-                .from(enums_1.Tables.users)
-                .update({ status: enums_1.UserStatus.SUBSCRIBED })
-                .eq('id', sender);
+        else if (user.status === "PAUSED") {
+            const { error } = yield bot_1.supabase.from("users").update({ status: "SUBSCRIBED" }).eq("id", sender);
             if (error) {
                 console.log(`Error on update: `, error);
                 yield ctx.reply(enums_1.Messages.ErrorOnRequest);
             }
             else {
-                yield ctx.reply('Sei di nuovo iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55');
+                yield ctx.reply("Sei di nuovo iscritto/a! Il messaggio dovrebbe arrivare ogni giorno alle 7:55");
             }
         }
     });

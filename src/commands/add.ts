@@ -6,13 +6,16 @@ export async function onAdd(ctx: CommandContext<MyContext>) {
     console.log(`${Commands.add} triggered`);
     const sender = ctx.from.id;
     const senderName = ctx.from.first_name;
+    const senderSurname = ctx.from.last_name;
 
     let { data, error } = await supabase.from("users").select("*");
     if (error) console.log("Error on supabase.from(users).select(): ", error);
     const users = data.map((userRow) => userRow.id);
     if (!users.includes(sender)) {
         try {
-            await supabase.from("users").insert([{ id: sender, name: senderName }]);
+            await supabase
+                .from("users")
+                .insert([{ id: sender, name: senderSurname ? `${senderName} ${senderSurname}` : senderName }]);
         } catch (error) {
             console.log("Error on supabase.from('users').insert: ", error);
             await bot.api.sendMessage(sender, Messages.ErrorOnRequest);

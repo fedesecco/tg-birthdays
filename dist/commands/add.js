@@ -17,13 +17,16 @@ function onAdd(ctx) {
         console.log(`${enums_1.Commands.add} triggered`);
         const sender = ctx.from.id;
         const senderName = ctx.from.first_name;
+        const senderSurname = ctx.from.last_name;
         let { data, error } = yield bot_1.supabase.from("users").select("*");
         if (error)
             console.log("Error on supabase.from(users).select(): ", error);
         const users = data.map((userRow) => userRow.id);
         if (!users.includes(sender)) {
             try {
-                yield bot_1.supabase.from("users").insert([{ id: sender, name: senderName }]);
+                yield bot_1.supabase
+                    .from("users")
+                    .insert([{ id: sender, name: senderSurname ? `${senderName} ${senderSurname}` : senderName }]);
             }
             catch (error) {
                 console.log("Error on supabase.from('users').insert: ", error);

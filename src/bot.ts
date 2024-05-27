@@ -1,26 +1,25 @@
-import { Bot, session, webhookCallback } from 'grammy';
-import express, { Request, Response, NextFunction } from 'express';
-import dotenv from 'dotenv';
-import { Commands, MyContext, Requests } from './enums';
-import { createClient } from '@supabase/supabase-js';
-import { addConversation, onAdd } from './commands/add';
-import { deleteConversation, onDelete } from './commands/delete';
-import { conversations, createConversation } from '@grammyjs/conversations';
-import { onTest } from './commands/test';
-import { onSubscribe } from './commands/subscribe';
-import { onUnsubscribe } from './commands/unsubscribe';
-import { onTestCron } from './requests/testCron';
-import { onBirthDaysOfTheDay } from './requests/bdaysOfTheDay';
-import { onToday } from './commands/today';
-import { onSearch, searchConversation } from './commands/search';
-import { Database } from './schema';
+import { Bot, session, webhookCallback } from "grammy";
+import dotenv from "dotenv";
+import { Commands, MyContext, Requests } from "./enums";
+import { createClient } from "@supabase/supabase-js";
+import { addConversation, onAdd } from "./commands/add";
+import { deleteConversation, onDelete } from "./commands/delete";
+import { conversations, createConversation } from "@grammyjs/conversations";
+import { onTest } from "./commands/test";
+import { onSubscribe } from "./commands/subscribe";
+import { onUnsubscribe } from "./commands/unsubscribe";
+import { onTestCron } from "./requests/testCron";
+import { onBirthDaysOfTheDay } from "./requests/bdaysOfTheDay";
+import { onToday } from "./commands/today";
+import { onSearch, searchConversation } from "./commands/search";
+import { Database } from "./schema";
 
 dotenv.config();
 
 // TELEGRAM BOT INIT
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
-    console.error('No token!');
+    console.error("No token!");
 }
 export const bot = new Bot<MyContext>(token);
 /** conversations */
@@ -37,11 +36,11 @@ export const supabase = createClient<Database>(process.env.SUPABASE_URL, process
 });
 if (supabase.storage) {
     console.log(`Login successful.`);
-} else console.log('Fail on login');
+} else console.log("Fail on login");
 
 // start
 bot.command(Commands.start, (ctx) => {
-    console.log('/start triggered');
+    console.log("/start triggered");
     onAdd(ctx);
 });
 
@@ -54,7 +53,7 @@ bot.command(Commands.unsubscribe, onUnsubscribe);
 bot.command(Commands.search, onSearch);
 
 // API calls from cyclic
-const onRequest = async (req: Request, res: Response, next: NextFunction) => {
+/* const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     if (req.method === 'POST' && req.path === Requests.bdays) {
         await onBirthDaysOfTheDay();
         res.status(200);
@@ -65,7 +64,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         res.send('done');
     }
     next();
-};
+}; */
 
 /**
  * TODO:
@@ -73,12 +72,11 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
  */
 
 //deploy
-if (process.env.NODE_ENV === 'production') {
+/* if (process.env.NODE_ENV === 'production') {
     const app = express();
     app.use(express.json());
     app.use(onRequest);
     app.use(webhookCallback(bot, 'express'));
-    /** listen */
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);
@@ -86,4 +84,4 @@ if (process.env.NODE_ENV === 'production') {
 } else {
     console.log(`Bot working on localhost`);
     bot.start();
-}
+} */

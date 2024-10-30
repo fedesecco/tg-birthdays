@@ -1,0 +1,17 @@
+- variable: TELEGRAM_TOKEN
+  secret: TELEGRAM_TOKEN
+
+- variable: SUPABASE_URL
+  secret: SUPABASE_URL
+
+- variable: SUPABASE_KEY
+  secret: SUPABASE_KEY
+
+- variable: SUPABASE_ACCESS_TOKEN
+  secret: SUPABASE_ACCESS_TOKEN
+
+- variable: SUPABASE_DB_PSW
+  secret: SUPABASE_DB_PSW
+
+- variable: SUPABASE_ID
+  secret: SUPABASE_ID

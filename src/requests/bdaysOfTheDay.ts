@@ -14,4 +14,5 @@ export async function onBirthDaysOfTheDay() {
             await bot.api.sendMessage(subscriber, msg);
         }
     }
+    return;
 }

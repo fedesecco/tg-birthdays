@@ -55,16 +55,21 @@ bot.command(Commands.search, onSearch);
 
 // API calls from cyclic
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
-    if (req.method === "POST" && req.path === Requests.bdays) {
-        await onBirthDaysOfTheDay();
-        res.status(200);
-        res.send("done");
-    } else if (req.method === "POST" && req.path === Requests.test) {
-        await onTestCron();
-        res.status(200);
-        res.send("done");
+    try {
+        if (req.method === "POST" && req.path === Requests.bdays) {
+            await onBirthDaysOfTheDay();
+            res.status(200).send("done");
+            return;
+        } else if (req.method === "POST" && req.path === Requests.test) {
+            await onTestCron();
+            res.status(200).send("done");
+            return;
+        }
+        next();
+    } catch (error) {
+        console.error("Error in onRequest:", error);
+        res.status(500).send("Internal Server Error");
     }
-    next();
 };
 
 /**

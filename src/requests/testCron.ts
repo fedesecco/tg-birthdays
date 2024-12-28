@@ -14,4 +14,5 @@ export async function onTestCron() {
             await bot.api.sendMessage(People.Fede, msg);
         }
     }
+    return
 }

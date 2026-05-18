@@ -21,7 +21,7 @@ function onAdd(ctx) {
         let { data, error } = yield bot_1.supabase.from("users").select("*");
         if (error)
             console.log("Error on supabase.from(users).select(): ", error);
-        const users = data.map((userRow) => userRow.id);
+        const users = (data !== null && data !== void 0 ? data : []).map((userRow) => userRow.id);
         if (!users.includes(sender)) {
             try {
                 yield bot_1.supabase
@@ -57,9 +57,18 @@ function addConversation(conversation, ctx) {
         });
         const inputMonth = (yield conversation.waitFor(":text")).message.text;
         const numberMonth = enums_1.monthToNumber[inputMonth];
-        const inputDate = inputDay + "/" + numberMonth;
+        const birthDay = Number.parseInt(inputDay, 10);
+        const birthMonth = Number.parseInt(numberMonth, 10);
         try {
-            yield bot_1.supabase.from("birthdays").insert([{ name: inputName, birthday: inputDate, owner: sender }]);
+            yield bot_1.supabase.from("birthdays").insert([
+                {
+                    display_name: inputName,
+                    birth_day: birthDay,
+                    birth_month: birthMonth,
+                    source: "manual",
+                    user_id: sender,
+                },
+            ]);
             yield ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDay} ${inputMonth}`);
         }
         catch (error) {

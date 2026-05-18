@@ -26,6 +26,7 @@ function onBirthDaysOfTheDay() {
                 yield bot_1.bot.api.sendMessage(subscriber, msg);
             }
         }
+        return;
     });
 }
 exports.onBirthDaysOfTheDay = onBirthDaysOfTheDay;

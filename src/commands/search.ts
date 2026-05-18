@@ -16,9 +16,15 @@ export async function searchConversation(conversation: MyConversation, ctx: MyCo
             one_time_keyboard: true,
         },
     });
+
     const nameToShowBday = (await conversation.waitFor(':text')).message.text;
-    const date = rawData.filter((row) => row.name === nameToShowBday).map((row) => row.birthday)[0];
-    const day = date.substring(0, 2);
-    const month = numberToMonth[date.substring(3, 5)];
-    await ctx.reply(`Il compleanno di ${nameToShowBday} è il ${day} ${month}`);
+    const birthday = rawData.find((row) => row.display_name === nameToShowBday);
+    if (!birthday) {
+        await ctx.reply(`Non ho trovato nessuno con nome "${nameToShowBday}"`);
+        return;
+    }
+
+    const day = birthday.birth_day.toString().padStart(2, '0');
+    const month = numberToMonth[birthday.birth_month.toString().padStart(2, '0')];
+    await ctx.reply(`Il compleanno di ${nameToShowBday} e' il ${day} ${month}`);
 }

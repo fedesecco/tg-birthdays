@@ -22,12 +22,12 @@ export async function deleteConversation(conversation: MyConversation, ctx: MyCo
     let { count, error } = await supabase
         .from('birthdays')
         .delete({ count: 'exact' })
-        .eq('owner', sender)
-        .eq('name', nameToDel);
+        .eq('user_id', sender)
+        .eq('display_name', nameToDel);
 
     if (error) {
         console.log(
-            `Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`,
+            `Error on supabase.from('birthdays').delete().eq('user_id', ${sender}).eq('display_name', ${nameToDel})`,
             error
         );
         await bot.api.sendMessage(sender, Messages.ErrorOnRequest);

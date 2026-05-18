@@ -10,7 +10,7 @@ export async function onAdd(ctx: CommandContext<MyContext>) {
 
     let { data, error } = await supabase.from("users").select("*");
     if (error) console.log("Error on supabase.from(users).select(): ", error);
-    const users = data.map((userRow) => userRow.id);
+    const users = (data ?? []).map((userRow) => userRow.id);
     if (!users.includes(sender)) {
         try {
             await supabase
@@ -46,10 +46,19 @@ export async function addConversation(conversation: MyConversation, ctx: MyConte
     });
     const inputMonth = (await conversation.waitFor(":text")).message.text;
     const numberMonth = monthToNumber[inputMonth];
-    const inputDate = inputDay + "/" + numberMonth;
+    const birthDay = Number.parseInt(inputDay, 10);
+    const birthMonth = Number.parseInt(numberMonth, 10);
 
     try {
-        await supabase.from("birthdays").insert([{ name: inputName, birthday: inputDate, owner: sender }]);
+        await supabase.from("birthdays").insert([
+            {
+                display_name: inputName,
+                birth_day: birthDay,
+                birth_month: birthMonth,
+                source: "manual",
+                user_id: sender,
+            },
+        ]);
         await ctx.reply(`Aggiunto/a ${inputName} con compleanno il ${inputDay} ${inputMonth}`);
     } catch (error) {
         console.log("Error on supabase.from('birthdays').insert: ", error);

@@ -31,7 +31,7 @@ const search_1 = require("./commands/search");
 dotenv_1.default.config();
 const token = process.env.TELEGRAM_TOKEN;
 if (!token) {
-    console.error('No token!');
+    console.error("No token!");
 }
 exports.bot = new grammy_1.Bot(token);
 exports.bot.use((0, grammy_1.session)({ initial: () => ({}) }));
@@ -47,9 +47,9 @@ if (exports.supabase.storage) {
     console.log(`Login successful.`);
 }
 else
-    console.log('Fail on login');
+    console.log("Fail on login");
 exports.bot.command(enums_1.Commands.start, (ctx) => {
-    console.log('/start triggered');
+    console.log("/start triggered");
     (0, add_1.onAdd)(ctx);
 });
 exports.bot.command(enums_1.Commands.triggerBdays, today_1.onToday);
@@ -60,23 +60,29 @@ exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);
 exports.bot.command(enums_1.Commands.unsubscribe, unsubscribe_1.onUnsubscribe);
 exports.bot.command(enums_1.Commands.search, search_1.onSearch);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.method === 'POST' && req.path === enums_1.Requests.bdays) {
-        yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();
-        res.status(200);
-        res.send('done');
+    try {
+        if (req.method === "POST" && req.path === enums_1.Requests.bdays) {
+            yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();
+            res.status(200).send("done");
+            return;
+        }
+        else if (req.method === "POST" && req.path === enums_1.Requests.test) {
+            yield (0, testCron_1.onTestCron)();
+            res.status(200).send("done");
+            return;
+        }
+        next();
     }
-    else if (req.method === 'POST' && req.path === enums_1.Requests.test) {
-        yield (0, testCron_1.onTestCron)();
-        res.status(200);
-        res.send('done');
+    catch (error) {
+        console.error("Error in onRequest:", error);
+        res.status(500).send("Internal Server Error");
     }
-    next();
 });
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
     const app = (0, express_1.default)();
     app.use(express_1.default.json());
     app.use(onRequest);
-    app.use((0, grammy_1.webhookCallback)(exports.bot, 'express'));
+    app.use((0, grammy_1.webhookCallback)(exports.bot, "express"));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);

@@ -12,26 +12,31 @@ export function isAdmin(texter: number) {
 
 export async function buildBdaysMsg(owner: number): Promise<string | null> {
     const rawDate = new Date();
-    const day = rawDate.getDate().toString().padStart(2, "0");
-    const month = (rawDate.getMonth() + 1).toString().padStart(2, "0");
-    const today = `${day}/${month}`;
+    const day = rawDate.getDate();
+    const month = rawDate.getMonth() + 1;
 
-    let { data, error } = await supabase.from("birthdays").select("*").eq("birthday", today).eq("owner", owner);
+    let { data, error } = await supabase
+        .from("birthdays")
+        .select("*")
+        .eq("birth_day", day)
+        .eq("birth_month", month)
+        .eq("user_id", owner);
     if (error) console.log("Error on supabase.from(birthdays).select(): ", error);
+    const rows = data ?? [];
 
     let msg: string | null = "";
-    if (data.length === 0) {
+    if (rows.length === 0) {
         msg = null;
-    } else if (data.length === 1) {
-        msg = `Oggi compie gli anni ${data[0].name}`;
-    } else if (data.length > 1) {
+    } else if (rows.length === 1) {
+        msg = `Oggi compie gli anni ${rows[0].display_name}`;
+    } else if (rows.length > 1) {
         msg = "Oggi compiono gli anni";
-        data.forEach((bday, i) => {
-            msg += ` ${bday.name}`;
-            i < data.length ? (msg += ", ") : (msg += ".");
+        rows.forEach((bday, i) => {
+            msg += ` ${bday.display_name}`;
+            i < rows.length - 1 ? (msg += ", ") : (msg += ".");
         });
     } else {
-        msg = `error, data length is ${data.length}`;
+        msg = `error, data length is ${rows.length}`;
     }
 
     return msg;
@@ -40,18 +45,21 @@ export async function buildBdaysMsg(owner: number): Promise<string | null> {
 export async function getNamesTable(user: number): Promise<{
     keyboard: KeyboardButton[][];
     rawData: {
-        birthday: string;
-        date_added: string;
-        name: string;
-        owner: number;
+        birth_day: number;
+        birth_month: number;
+        birth_year: number | null;
+        date_added: string | null;
+        display_name: string;
+        user_id: number;
     }[];
 }> {
-    let { data, error } = await supabase.from("birthdays").select("*").eq("owner", user);
+    let { data, error } = await supabase.from("birthdays").select("*").eq("user_id", user);
     if (error) console.log("Error on supabase.from(birthdays).select(): ", error);
-    let names = data.map((row) => {
-        return row.name;
+    const rows = data ?? [];
+    let names = rows.map((row) => {
+        return row.display_name;
     });
-    let keyboard = [];
+    let keyboard: { text: string }[][] = [];
     names.forEach((name) => {
         keyboard.push([{ text: name }]);
     });
@@ -64,5 +72,5 @@ export async function getNamesTable(user: number): Promise<{
             return 1;
         } else return 0;
     });
-    return { keyboard: keyboard, rawData: data };
+    return { keyboard: keyboard, rawData: rows };
 }

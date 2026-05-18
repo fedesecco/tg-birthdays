@@ -26,6 +26,7 @@ function onTestCron() {
                 yield bot_1.bot.api.sendMessage(enums_1.People.Fede, msg);
             }
         }
+        return;
     });
 }
 exports.onTestCron = onTestCron;

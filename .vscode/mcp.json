@@ -1,0 +1,15 @@
+{
+  "servers": {
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=${input:supabase-project-ref}"
+    }
+  },
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "supabase-project-ref",
+      "description": "Supabase project ref to scope the MCP server"
+    }
+  ]
+}

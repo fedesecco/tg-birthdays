@@ -13,12 +13,15 @@ import { onTestCron } from "./requests/testCron";
 import { onBirthDaysOfTheDay } from "./requests/bdaysOfTheDay";
 import { onToday } from "./commands/today";
 import { onSearch, searchConversation } from "./commands/search";
+import { onSync } from "./commands/sync";
 import { Database } from "./schema";
+import { completeGoogleAuthAndSync, verifyGoogleAuthState } from "./google";
 
 dotenv.config();
 
 // TELEGRAM BOT INIT
-const token = process.env.TELEGRAM_TOKEN;
+const isProduction = process.env.NODE_ENV === "production";
+const token = isProduction ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_BOT_TOKEN ?? process.env.TELEGRAM_TOKEN;
 if (!token) {
     console.error("No token!");
 }
@@ -52,6 +55,7 @@ bot.command(Commands.delete, onDelete);
 bot.command(Commands.subscribe, onSubscribe);
 bot.command(Commands.unsubscribe, onUnsubscribe);
 bot.command(Commands.search, onSearch);
+bot.command(Commands.sync, onSync);
 
 // API calls from cyclic
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
@@ -63,6 +67,18 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
         } else if (req.method === "POST" && req.path === Requests.test) {
             await onTestCron();
             res.status(200).send("done");
+            return;
+        } else if (req.method === "GET" && req.path === Requests.googleOAuthCallback) {
+            const code = typeof req.query.code === "string" ? req.query.code : undefined;
+            const state = typeof req.query.state === "string" ? req.query.state : undefined;
+            if (!code) {
+                res.status(400).send("Missing OAuth code");
+                return;
+            }
+
+            const userId = verifyGoogleAuthState(state);
+            await completeGoogleAuthAndSync(code, userId);
+            res.status(200).send("Google account connected. Puoi tornare su Telegram.");
             return;
         }
         next();
@@ -77,11 +93,12 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
  * - i18n
  */
 
+const app = express();
+app.use(express.json());
+app.use(onRequest);
+
 //deploy
-if (process.env.NODE_ENV === "production") {
-    const app = express();
-    app.use(express.json());
-    app.use(onRequest);
+if (isProduction) {
     app.use(webhookCallback(bot, "express"));
     /** listen */
     const PORT = process.env.PORT || 3000;
@@ -89,6 +106,10 @@ if (process.env.NODE_ENV === "production") {
         console.log(`Bot listening on port ${PORT}`);
     });
 } else {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`OAuth callback listening on port ${PORT}`);
+    });
     console.log(`Bot working on localhost`);
     bot.start();
 }

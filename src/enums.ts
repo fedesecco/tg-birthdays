@@ -21,6 +21,7 @@ export enum Commands {
     add = 'add',
     delete = 'remove',
     search = 'search',
+    sync = 'sync',
     triggerBdays = 'today',
     subscribe = 'sub',
     unsubscribe = 'unsub',
@@ -29,6 +30,7 @@ export enum Commands {
 export enum Requests {
     bdays = '/birthDaysOfTheDay',
     test = '/testCron',
+    googleOAuthCallback = '/google/oauth/callback',
 }
 
 export enum Messages {

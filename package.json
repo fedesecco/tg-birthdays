@@ -2,10 +2,11 @@
     "name": "tg-birthdays",
     "author": "Federico Secco",
     "description": "",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "license": "GNU GENERAL PUBLIC LICENSE",
     "main": "dist/bot.js",
     "scripts": {
+        "build": "tsc",
         "local": "tsc && node .",
         "start": "node dist/bot.js",
         "go": "npm version patch --commit-hooks=false --git-tag-version=false && npx tsc",

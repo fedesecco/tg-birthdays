@@ -18,6 +18,7 @@ var Commands;
     Commands["add"] = "add";
     Commands["delete"] = "remove";
     Commands["search"] = "search";
+    Commands["sync"] = "sync";
     Commands["triggerBdays"] = "today";
     Commands["subscribe"] = "sub";
     Commands["unsubscribe"] = "unsub";
@@ -26,6 +27,7 @@ var Requests;
 (function (Requests) {
     Requests["bdays"] = "/birthDaysOfTheDay";
     Requests["test"] = "/testCron";
+    Requests["googleOAuthCallback"] = "/google/oauth/callback";
 })(Requests = exports.Requests || (exports.Requests = {}));
 var Messages;
 (function (Messages) {

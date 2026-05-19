@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.onTestCron = void 0;
 const bot_1 = require("../bot");
 const enums_1 = require("../enums");
+const telegram_1 = require("../telegram");
 const utils_1 = require("../utils");
 function onTestCron() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -23,7 +24,12 @@ function onTestCron() {
         for (const subscriber of chats) {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             if (msg) {
-                yield bot_1.bot.api.sendMessage(enums_1.People.Fede, msg);
+                try {
+                    yield bot_1.bot.api.sendMessage(enums_1.People.Fede, msg);
+                }
+                catch (error) {
+                    yield (0, telegram_1.pauseUserOnUndeliverableMessage)(subscriber, error);
+                }
             }
         }
         return;

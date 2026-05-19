@@ -1,5 +1,6 @@
 import { supabase, bot } from "../bot";
 import { People, Requests } from "../enums";
+import { pauseUserOnUndeliverableMessage } from "../telegram";
 import { buildBdaysMsg } from "../utils";
 
 export async function onTestCron() {
@@ -11,8 +12,12 @@ export async function onTestCron() {
     for (const subscriber of chats) {
         const msg = await buildBdaysMsg(subscriber);
         if (msg) {
-            await bot.api.sendMessage(People.Fede, msg);
+            try {
+                await bot.api.sendMessage(People.Fede, msg);
+            } catch (error) {
+                await pauseUserOnUndeliverableMessage(subscriber, error);
+            }
         }
     }
-    return
+    return;
 }

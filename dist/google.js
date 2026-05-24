@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.completeGoogleAuthAndSync = exports.isGoogleConnected = exports.syncGoogleContacts = exports.exchangeGoogleCode = exports.ensureUserRecord = exports.verifyGoogleAuthState = exports.buildGoogleAuthUrl = void 0;
+exports.formatGoogleSyncReport = exports.completeGoogleAuthAndSync = exports.isGoogleConnected = exports.syncGoogleContacts = exports.exchangeGoogleCode = exports.ensureUserRecord = exports.verifyGoogleAuthState = exports.buildGoogleAuthUrl = void 0;
 const crypto_1 = require("crypto");
 const bot_1 = require("./bot");
 const GOOGLE_AUTH_BASE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -197,7 +197,7 @@ function pickDisplayName(names) {
     return (_c = (_a = primary === null || primary === void 0 ? void 0 : primary.displayName) !== null && _a !== void 0 ? _a : (_b = names.find((name) => name.displayName)) === null || _b === void 0 ? void 0 : _b.displayName) !== null && _c !== void 0 ? _c : null;
 }
 function pickBirthday(birthdays) {
-    var _a, _b;
+    var _a;
     if (!(birthdays === null || birthdays === void 0 ? void 0 : birthdays.length)) {
         return null;
     }
@@ -209,8 +209,14 @@ function pickBirthday(birthdays) {
     return {
         day: selected.date.day,
         month: selected.date.month,
-        year: (_b = selected.date.year) !== null && _b !== void 0 ? _b : null,
+        year: normalizeBirthYear(selected.date.year),
     };
+}
+function normalizeBirthYear(year) {
+    if (year == null) {
+        return null;
+    }
+    return year >= 1900 && year <= 9999 ? year : null;
 }
 function listGoogleContacts(accessToken) {
     var _a, _b;
@@ -256,15 +262,84 @@ function syncGoogleContacts(userId) {
         try {
             const accessToken = yield refreshGoogleAccessToken(userId);
             const contacts = yield listGoogleContacts(accessToken);
-            const { error: deleteError } = yield bot_1.supabase.from("birthdays").delete().eq("user_id", userId).eq("source", "google");
-            if (deleteError) {
-                throw deleteError;
+            const dedupedContacts = new Map();
+            for (const contact of contacts) {
+                dedupedContacts.set(contact.external_contact_id, contact);
             }
-            if (contacts.length > 0) {
-                const payload = contacts.map((contact) => (Object.assign(Object.assign({}, contact), { user_id: userId })));
-                const { error: insertError } = yield bot_1.supabase.from("birthdays").insert(payload);
+            const { data: existingRows, error: existingError } = yield bot_1.supabase
+                .from("birthdays")
+                .select("id, birth_day, birth_month, birth_year, display_name, external_contact_id, google_contact_etag")
+                .eq("user_id", userId)
+                .eq("source", "google");
+            if (existingError) {
+                throw existingError;
+            }
+            const existingByExternalId = new Map();
+            for (const row of existingRows !== null && existingRows !== void 0 ? existingRows : []) {
+                if (row.external_contact_id) {
+                    existingByExternalId.set(row.external_contact_id, row);
+                }
+            }
+            const rows = [];
+            const inserts = [];
+            const updates = [];
+            for (const contact of dedupedContacts.values()) {
+                const existing = existingByExternalId.get(contact.external_contact_id);
+                if (!existing) {
+                    inserts.push(Object.assign(Object.assign({}, contact), { user_id: userId }));
+                    rows.push(toSyncReportRow(contact, "NUOVO"));
+                    continue;
+                }
+                const hasChanged = existing.display_name !== contact.display_name ||
+                    existing.birth_day !== contact.birth_day ||
+                    existing.birth_month !== contact.birth_month ||
+                    existing.birth_year !== contact.birth_year ||
+                    existing.google_contact_etag !== contact.google_contact_etag;
+                if (hasChanged) {
+                    updates.push({
+                        id: existing.id,
+                        values: {
+                            birth_day: contact.birth_day,
+                            birth_month: contact.birth_month,
+                            birth_year: contact.birth_year,
+                            display_name: contact.display_name,
+                            google_contact_etag: contact.google_contact_etag,
+                        },
+                    });
+                    rows.push(toSyncReportRow(contact, "AGGIORNATO"));
+                    continue;
+                }
+                rows.push(toSyncReportRow(contact, "GIA IMPORTATO"));
+            }
+            if (inserts.length > 0) {
+                const { error: insertError } = yield bot_1.supabase.from("birthdays").insert(inserts);
                 if (insertError) {
                     throw insertError;
+                }
+            }
+            for (const update of updates) {
+                const { error: updateRowError } = yield bot_1.supabase
+                    .from("birthdays")
+                    .update(update.values)
+                    .eq("id", update.id);
+                if (updateRowError) {
+                    throw updateRowError;
+                }
+            }
+            let removedCount = 0;
+            const staleExternalIds = (existingRows !== null && existingRows !== void 0 ? existingRows : [])
+                .filter((row) => row.external_contact_id && !dedupedContacts.has(row.external_contact_id))
+                .map((row) => row.external_contact_id);
+            if (staleExternalIds.length > 0) {
+                removedCount = staleExternalIds.length;
+                const { error: deleteError } = yield bot_1.supabase
+                    .from("birthdays")
+                    .delete()
+                    .eq("user_id", userId)
+                    .eq("source", "google")
+                    .in("external_contact_id", staleExternalIds);
+                if (deleteError) {
+                    throw deleteError;
                 }
             }
             const { error: updateError } = yield bot_1.supabase.from("users").update({
@@ -275,7 +350,15 @@ function syncGoogleContacts(userId) {
             if (updateError) {
                 throw updateError;
             }
-            return contacts.length;
+            rows.sort(compareSyncReportRows);
+            return {
+                insertedCount: inserts.length,
+                removedCount,
+                skippedCount: rows.filter((row) => row.status === "GIA IMPORTATO").length,
+                totalWithBirthday: rows.length,
+                updatedCount: updates.length,
+                rows,
+            };
         }
         catch (error) {
             const message = error instanceof Error ? error.message : "Unknown Google sync error";
@@ -304,10 +387,96 @@ exports.isGoogleConnected = isGoogleConnected;
 function completeGoogleAuthAndSync(code, userId) {
     return __awaiter(this, void 0, void 0, function* () {
         yield exchangeGoogleCode(code, userId);
-        const syncedContacts = yield syncGoogleContacts(userId);
-        yield bot_1.bot.api.sendMessage(userId, syncedContacts > 0
-            ? `Sync completata. Ho importato ${syncedContacts} contatti Google con compleanno.`
-            : "Sync completata. Non ho trovato contatti Google con compleanno.");
+        const result = yield syncGoogleContacts(userId);
+        for (const message of formatGoogleSyncReport(result)) {
+            yield bot_1.bot.api.sendMessage(userId, message, { parse_mode: "HTML" });
+        }
     });
 }
 exports.completeGoogleAuthAndSync = completeGoogleAuthAndSync;
+function toSyncReportRow(contact, status) {
+    return {
+        birth_day: contact.birth_day,
+        birth_month: contact.birth_month,
+        birth_year: contact.birth_year,
+        display_name: contact.display_name,
+        status,
+    };
+}
+function compareSyncReportRows(a, b) {
+    return a.display_name.localeCompare(b.display_name, "it", { sensitivity: "base" });
+}
+function splitDisplayName(displayName) {
+    const parts = displayName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length <= 1) {
+        return { firstName: displayName.trim(), lastName: "" };
+    }
+    return {
+        firstName: parts[0],
+        lastName: parts.slice(1).join(" "),
+    };
+}
+function formatBirthDate(row) {
+    const day = String(row.birth_day).padStart(2, "0");
+    const month = String(row.birth_month).padStart(2, "0");
+    return row.birth_year ? `${day}/${month}/${row.birth_year}` : `${day}/${month}`;
+}
+function truncateCell(value, width) {
+    if (value.length <= width) {
+        return value.padEnd(width, " ");
+    }
+    if (width <= 1) {
+        return value.slice(0, width);
+    }
+    return `${value.slice(0, width - 1)}…`;
+}
+function escapeHtml(value) {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+function formatGoogleSyncReport(result) {
+    if (result.totalWithBirthday === 0) {
+        return ["Sync completata. Non ho trovato contatti Google con compleanno."];
+    }
+    const summary = [
+        "Sync completata.",
+        `Totale con compleanno: ${result.totalWithBirthday}`,
+        `Nuovi: ${result.insertedCount}`,
+        `Aggiornati: ${result.updatedCount}`,
+        `Gia importati: ${result.skippedCount}`,
+        `Rimossi: ${result.removedCount}`,
+    ].join("\n");
+    const header = [
+        `${truncateCell("Stato", 13)} ${truncateCell("Nome", 14)} ${truncateCell("Cognome", 18)} ${truncateCell("Data", 10)}`,
+        `${"-".repeat(13)} ${"-".repeat(14)} ${"-".repeat(18)} ${"-".repeat(10)}`,
+    ];
+    const bodyLines = result.rows.map((row) => {
+        const { firstName, lastName } = splitDisplayName(row.display_name);
+        return [
+            truncateCell(row.status, 13),
+            truncateCell(firstName || "-", 14),
+            truncateCell(lastName || "-", 18),
+            truncateCell(formatBirthDate(row), 10),
+        ].join(" ");
+    });
+    const messages = [];
+    let currentLines = [...header];
+    for (const line of bodyLines) {
+        const candidateLines = [...currentLines, line];
+        const prefix = messages.length === 0 ? `${summary}\n\n` : "";
+        const candidateMessage = `${prefix}<pre>${escapeHtml(candidateLines.join("\n"))}</pre>`;
+        if (candidateMessage.length > 3500 && currentLines.length > header.length) {
+            const currentPrefix = messages.length === 0 ? `${summary}\n\n` : "";
+            messages.push(`${currentPrefix}<pre>${escapeHtml(currentLines.join("\n"))}</pre>`);
+            currentLines = [...header, line];
+            continue;
+        }
+        currentLines = candidateLines;
+    }
+    const finalPrefix = messages.length === 0 ? `${summary}\n\n` : "";
+    messages.push(`${finalPrefix}<pre>${escapeHtml(currentLines.join("\n"))}</pre>`);
+    return messages;
+}
+exports.formatGoogleSyncReport = formatGoogleSyncReport;

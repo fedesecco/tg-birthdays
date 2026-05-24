@@ -25,10 +25,10 @@ function onSync(ctx) {
                 yield ctx.reply(`Per sincronizzare i compleanni da Google devi prima collegare il tuo account.\n${authUrl}`);
                 return;
             }
-            const syncedContacts = yield (0, google_1.syncGoogleContacts)(sender);
-            yield ctx.reply(syncedContacts > 0
-                ? `Sync completata. Ho importato ${syncedContacts} contatti Google con compleanno.`
-                : "Sync completata. Non ho trovato contatti Google con compleanno.");
+            const result = yield (0, google_1.syncGoogleContacts)(sender);
+            for (const message of (0, google_1.formatGoogleSyncReport)(result)) {
+                yield ctx.reply(message, { parse_mode: "HTML" });
+            }
         }
         catch (error) {
             console.log("Error during /sync: ", error);

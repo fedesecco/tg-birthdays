@@ -1,5 +1,5 @@
 import { CommandContext } from "grammy";
-import { buildGoogleAuthUrl, ensureUserRecord, isGoogleConnected, syncGoogleContacts } from "../google";
+import { buildGoogleAuthUrl, ensureUserRecord, formatGoogleSyncReport, isGoogleConnected, syncGoogleContacts } from "../google";
 import { Commands, Messages, MyContext } from "../enums";
 
 export async function onSync(ctx: CommandContext<MyContext>) {
@@ -19,12 +19,10 @@ export async function onSync(ctx: CommandContext<MyContext>) {
             return;
         }
 
-        const syncedContacts = await syncGoogleContacts(sender);
-        await ctx.reply(
-            syncedContacts > 0
-                ? `Sync completata. Ho importato ${syncedContacts} contatti Google con compleanno.`
-                : "Sync completata. Non ho trovato contatti Google con compleanno."
-        );
+        const result = await syncGoogleContacts(sender);
+        for (const message of formatGoogleSyncReport(result)) {
+            await ctx.reply(message, { parse_mode: "HTML" });
+        }
     } catch (error) {
         console.log("Error during /sync: ", error);
         const message = error instanceof Error ? error.message : "";

@@ -222,6 +222,7 @@ function listGoogleContacts(accessToken) {
     var _a, _b;
     return __awaiter(this, void 0, void 0, function* () {
         const imported = [];
+        const missingBirthday = [];
         let pageToken;
         do {
             const params = new URLSearchParams({
@@ -239,7 +240,15 @@ function listGoogleContacts(accessToken) {
             for (const person of (_a = data.connections) !== null && _a !== void 0 ? _a : []) {
                 const displayName = pickDisplayName(person.names);
                 const birthday = pickBirthday(person.birthdays);
-                if (!displayName || !birthday || !person.resourceName) {
+                if (!displayName || !person.resourceName) {
+                    continue;
+                }
+                if (!birthday) {
+                    missingBirthday.push({
+                        display_name: displayName,
+                        external_contact_id: person.resourceName,
+                        source: "google",
+                    });
                     continue;
                 }
                 imported.push({
@@ -254,14 +263,14 @@ function listGoogleContacts(accessToken) {
             }
             pageToken = data.nextPageToken;
         } while (pageToken);
-        return imported;
+        return { imported, missingBirthday };
     });
 }
 function syncGoogleContacts(userId) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
             const accessToken = yield refreshGoogleAccessToken(userId);
-            const contacts = yield listGoogleContacts(accessToken);
+            const { imported: contacts, missingBirthday } = yield listGoogleContacts(accessToken);
             const dedupedContacts = new Map();
             for (const contact of contacts) {
                 dedupedContacts.set(contact.external_contact_id, contact);
@@ -311,6 +320,15 @@ function syncGoogleContacts(userId) {
                 }
                 rows.push(toSyncReportRow(contact, "GIA IMPORTATO"));
             }
+            for (const contact of missingBirthday) {
+                rows.push({
+                    birth_day: null,
+                    birth_month: null,
+                    birth_year: null,
+                    display_name: contact.display_name,
+                    status: "MANCA COMPLEANNO",
+                });
+            }
             if (inserts.length > 0) {
                 const { error: insertError } = yield bot_1.supabase.from("birthdays").insert(inserts);
                 if (insertError) {
@@ -353,9 +371,10 @@ function syncGoogleContacts(userId) {
             rows.sort(compareSyncReportRows);
             return {
                 insertedCount: inserts.length,
+                missingBirthdayCount: missingBirthday.length,
                 removedCount,
                 skippedCount: rows.filter((row) => row.status === "GIA IMPORTATO").length,
-                totalWithBirthday: rows.length,
+                totalWithBirthday: contacts.length,
                 updatedCount: updates.length,
                 rows,
             };
@@ -404,6 +423,12 @@ function toSyncReportRow(contact, status) {
     };
 }
 function compareSyncReportRows(a, b) {
+    if (a.status === "MANCA COMPLEANNO" && b.status !== "MANCA COMPLEANNO") {
+        return 1;
+    }
+    if (a.status !== "MANCA COMPLEANNO" && b.status === "MANCA COMPLEANNO") {
+        return -1;
+    }
     return a.display_name.localeCompare(b.display_name, "it", { sensitivity: "base" });
 }
 function splitDisplayName(displayName) {
@@ -417,6 +442,9 @@ function splitDisplayName(displayName) {
     };
 }
 function formatBirthDate(row) {
+    if (!row.birth_day || !row.birth_month) {
+        return "-";
+    }
     const day = String(row.birth_day).padStart(2, "0");
     const month = String(row.birth_month).padStart(2, "0");
     return row.birth_year ? `${day}/${month}/${row.birth_year}` : `${day}/${month}`;
@@ -446,6 +474,7 @@ function formatGoogleSyncReport(result) {
         `Nuovi: ${result.insertedCount}`,
         `Aggiornati: ${result.updatedCount}`,
         `Gia importati: ${result.skippedCount}`,
+        `Manca compleanno: ${result.missingBirthdayCount}`,
         `Rimossi: ${result.removedCount}`,
     ].join("\n");
     const header = [

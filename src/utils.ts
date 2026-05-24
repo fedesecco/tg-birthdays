@@ -11,6 +11,10 @@ export function isAdmin(texter: number) {
 }
 
 export async function buildBdaysMsg(owner: number): Promise<string | null> {
+    if (owner == null) {
+        return null;
+    }
+
     const rawDate = new Date();
     const day = rawDate.getDate();
     const month = rawDate.getMonth() + 1;
@@ -53,6 +57,10 @@ export async function getNamesTable(user: number): Promise<{
         user_id: number;
     }[];
 }> {
+    if (user == null) {
+        return { keyboard: [], rawData: [] };
+    }
+
     let { data, error } = await supabase.from("birthdays").select("*").eq("user_id", user);
     if (error) console.log("Error on supabase.from(birthdays).select(): ", error);
     const rows = data ?? [];

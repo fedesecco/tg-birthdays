@@ -22,6 +22,9 @@ function isAdmin(texter) {
 exports.isAdmin = isAdmin;
 function buildBdaysMsg(owner) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (owner == null) {
+            return null;
+        }
         const rawDate = new Date();
         const day = rawDate.getDate();
         const month = rawDate.getMonth() + 1;
@@ -57,6 +60,9 @@ function buildBdaysMsg(owner) {
 exports.buildBdaysMsg = buildBdaysMsg;
 function getNamesTable(user) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (user == null) {
+            return { keyboard: [], rawData: [] };
+        }
         let { data, error } = yield bot_1.supabase.from("birthdays").select("*").eq("user_id", user);
         if (error)
             console.log("Error on supabase.from(birthdays).select(): ", error);

@@ -57,7 +57,7 @@ bot.command(Commands.unsubscribe, onUnsubscribe);
 bot.command(Commands.search, onSearch);
 bot.command(Commands.sync, onSync);
 
-// API calls from cyclic
+// Internal HTTP routes for scheduled tasks and OAuth callbacks
 const onRequest = async (req: Request, res: Response, next: NextFunction) => {
     try {
         if (req.method === "POST" && req.path === Requests.bdays) {

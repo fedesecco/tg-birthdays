@@ -28,11 +28,10 @@ function pauseUserOnUndeliverableMessage(userId, error) {
         if (!isDeliveryFailureToPause(error)) {
             throw error;
         }
-        const updatePayload = { status: "PAUSED" };
         console.log(`Pausing user ${userId} after Telegram delivery failure`, error);
         const { error: updateError } = yield bot_1.supabase
             .from("users")
-            .update(updatePayload)
+            .update({ status: "PAUSED" })
             .eq("id", userId);
         if (updateError) {
             console.log(`Error while pausing user ${userId}: `, updateError);

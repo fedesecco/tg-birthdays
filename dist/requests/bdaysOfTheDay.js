@@ -20,7 +20,7 @@ function onBirthDaysOfTheDay() {
         let { data, error } = yield bot_1.supabase.from("users").select("*").eq("status", "SUBSCRIBED");
         if (error)
             console.log("Error on supabase.from(users).select(): ", error);
-        const chats = data.map((user) => user.id);
+        const chats = (data !== null && data !== void 0 ? data : []).map((user) => user.id);
         for (const subscriber of chats) {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             if (msg) {

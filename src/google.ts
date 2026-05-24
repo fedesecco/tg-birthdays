@@ -56,6 +56,12 @@ type GoogleImportedContact = {
     source: "google";
 };
 
+type GoogleMissingBirthdayContact = {
+    display_name: string;
+    external_contact_id: string;
+    source: "google";
+};
+
 type ExistingGoogleBirthdayRow = {
     id: number;
     birth_day: number;
@@ -66,11 +72,11 @@ type ExistingGoogleBirthdayRow = {
     google_contact_etag: string | null;
 };
 
-type GoogleSyncStatus = "NUOVO" | "AGGIORNATO" | "GIA IMPORTATO";
+type GoogleSyncStatus = "NUOVO" | "AGGIORNATO" | "GIA IMPORTATO" | "MANCA COMPLEANNO";
 
 export type GoogleSyncReportRow = {
-    birth_day: number;
-    birth_month: number;
+    birth_day: number | null;
+    birth_month: number | null;
     birth_year: number | null;
     display_name: string;
     status: GoogleSyncStatus;
@@ -80,6 +86,7 @@ export type GoogleSyncResult = {
     insertedCount: number;
     removedCount: number;
     skippedCount: number;
+    missingBirthdayCount: number;
     totalWithBirthday: number;
     updatedCount: number;
     rows: GoogleSyncReportRow[];
@@ -329,6 +336,7 @@ function normalizeBirthYear(year: number | undefined) {
 
 async function listGoogleContacts(accessToken: string) {
     const imported: GoogleImportedContact[] = [];
+    const missingBirthday: GoogleMissingBirthdayContact[] = [];
 
     let pageToken: string | undefined;
     do {
@@ -352,7 +360,16 @@ async function listGoogleContacts(accessToken: string) {
         for (const person of data.connections ?? []) {
             const displayName = pickDisplayName(person.names);
             const birthday = pickBirthday(person.birthdays);
-            if (!displayName || !birthday || !person.resourceName) {
+            if (!displayName || !person.resourceName) {
+                continue;
+            }
+
+            if (!birthday) {
+                missingBirthday.push({
+                    display_name: displayName,
+                    external_contact_id: person.resourceName,
+                    source: "google",
+                });
                 continue;
             }
 
@@ -370,13 +387,13 @@ async function listGoogleContacts(accessToken: string) {
         pageToken = data.nextPageToken;
     } while (pageToken);
 
-    return imported;
+    return { imported, missingBirthday };
 }
 
 export async function syncGoogleContacts(userId: number) {
     try {
         const accessToken = await refreshGoogleAccessToken(userId);
-        const contacts = await listGoogleContacts(accessToken);
+        const { imported: contacts, missingBirthday } = await listGoogleContacts(accessToken);
         const dedupedContacts = new Map<string, GoogleImportedContact>();
         for (const contact of contacts) {
             dedupedContacts.set(contact.external_contact_id, contact);
@@ -438,6 +455,16 @@ export async function syncGoogleContacts(userId: number) {
             rows.push(toSyncReportRow(contact, "GIA IMPORTATO"));
         }
 
+        for (const contact of missingBirthday) {
+            rows.push({
+                birth_day: null,
+                birth_month: null,
+                birth_year: null,
+                display_name: contact.display_name,
+                status: "MANCA COMPLEANNO",
+            });
+        }
+
         if (inserts.length > 0) {
             const { error: insertError } = await supabase.from("birthdays").insert(inserts);
             if (insertError) {
@@ -486,9 +513,10 @@ export async function syncGoogleContacts(userId: number) {
 
         return {
             insertedCount: inserts.length,
+            missingBirthdayCount: missingBirthday.length,
             removedCount,
             skippedCount: rows.filter((row) => row.status === "GIA IMPORTATO").length,
-            totalWithBirthday: rows.length,
+            totalWithBirthday: contacts.length,
             updatedCount: updates.length,
             rows,
         } satisfies GoogleSyncResult;
@@ -533,6 +561,13 @@ function toSyncReportRow(contact: GoogleImportedContact, status: GoogleSyncStatu
 }
 
 function compareSyncReportRows(a: GoogleSyncReportRow, b: GoogleSyncReportRow) {
+    if (a.status === "MANCA COMPLEANNO" && b.status !== "MANCA COMPLEANNO") {
+        return 1;
+    }
+    if (a.status !== "MANCA COMPLEANNO" && b.status === "MANCA COMPLEANNO") {
+        return -1;
+    }
+
     return a.display_name.localeCompare(b.display_name, "it", { sensitivity: "base" });
 }
 
@@ -549,6 +584,10 @@ function splitDisplayName(displayName: string) {
 }
 
 function formatBirthDate(row: Pick<GoogleSyncReportRow, "birth_day" | "birth_month" | "birth_year">) {
+    if (!row.birth_day || !row.birth_month) {
+        return "-";
+    }
+
     const day = String(row.birth_day).padStart(2, "0");
     const month = String(row.birth_month).padStart(2, "0");
     return row.birth_year ? `${day}/${month}/${row.birth_year}` : `${day}/${month}`;
@@ -584,6 +623,7 @@ export function formatGoogleSyncReport(result: GoogleSyncResult) {
         `Nuovi: ${result.insertedCount}`,
         `Aggiornati: ${result.updatedCount}`,
         `Gia importati: ${result.skippedCount}`,
+        `Manca compleanno: ${result.missingBirthdayCount}`,
         `Rimossi: ${result.removedCount}`,
     ].join("\n");
 

@@ -1,4 +1,4 @@
-import { supabase, bot } from "../bot";
+import { supabase, bot } from "../platform";
 import { Requests } from "../enums";
 import { pauseUserOnUndeliverableMessage } from "../telegram";
 import { buildBdaysMsg } from "../utils";

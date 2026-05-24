@@ -1,5 +1,5 @@
 import { GrammyError } from "grammy";
-import { supabase } from "./bot";
+import { supabase } from "./platform";
 
 function isDeliveryFailureToPause(error: unknown) {
     if (!(error instanceof GrammyError)) {

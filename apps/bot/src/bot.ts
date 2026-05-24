@@ -1,11 +1,8 @@
-import { Bot, session, webhookCallback } from "grammy";
+import { webhookCallback } from "grammy";
 import express, { Request, Response, NextFunction } from "express";
-import dotenv from "dotenv";
 import { Commands, MyContext, Requests } from "./enums";
-import { createClient } from "@supabase/supabase-js";
 import { addConversation, onAdd } from "./commands/add";
 import { deleteConversation, onDelete } from "./commands/delete";
-import { conversations, createConversation } from "@grammyjs/conversations";
 import { onTest } from "./commands/test";
 import { onSubscribe } from "./commands/subscribe";
 import { onUnsubscribe } from "./commands/unsubscribe";
@@ -14,33 +11,9 @@ import { onBirthDaysOfTheDay } from "./requests/bdaysOfTheDay";
 import { onToday } from "./commands/today";
 import { onSearch, searchConversation } from "./commands/search";
 import { onSync } from "./commands/sync";
-import { Database } from "./schema";
 import { completeGoogleAuthAndSync, verifyGoogleAuthState } from "./google";
-
-dotenv.config();
-
-// TELEGRAM BOT INIT
-const isProduction = process.env.NODE_ENV === "production";
-const token = isProduction ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_BOT_TOKEN ?? process.env.TELEGRAM_TOKEN;
-if (!token) {
-    console.error("No token!");
-}
-export const bot = new Bot<MyContext>(token);
-/** conversations */
-bot.use(session({ initial: () => ({}) }));
-bot.use(conversations());
-bot.use(createConversation(addConversation));
-bot.use(createConversation(deleteConversation));
-bot.use(createConversation(searchConversation));
-
-// SUPABASE DATABASE INIT
-let storage: any;
-export const supabase = createClient<Database>(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-    auth: { persistSession: false },
-});
-if (supabase.storage) {
-    console.log(`Login successful.`);
-} else console.log("Fail on login");
+import { bot, isProduction } from "./platform";
+import { registerApiRoutes } from "./web-api";
 
 // start
 bot.command(Commands.start, (ctx) => {
@@ -96,6 +69,7 @@ const onRequest = async (req: Request, res: Response, next: NextFunction) => {
 const app = express();
 app.use(express.json());
 app.use(onRequest);
+registerApiRoutes(app);
 
 //deploy
 if (isProduction) {

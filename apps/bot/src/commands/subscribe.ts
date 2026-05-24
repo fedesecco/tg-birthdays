@@ -1,5 +1,5 @@
 import { CommandContext } from "grammy";
-import { supabase } from "../bot";
+import { supabase } from "../platform";
 import { Commands, MyContext, Messages } from "../enums";
 
 export async function onSubscribe(ctx: CommandContext<MyContext>) {

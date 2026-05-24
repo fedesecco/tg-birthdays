@@ -1,5 +1,5 @@
 import { CommandContext } from 'grammy';
-import { bot } from '../bot';
+import { bot } from '../platform';
 import { Messages, MyContext } from '../enums';
 import { isAdmin } from '../utils';
 

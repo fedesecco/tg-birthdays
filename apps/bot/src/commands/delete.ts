@@ -1,6 +1,6 @@
 import { CommandContext } from 'grammy';
 import { Commands, Convs, Messages, MyContext, MyConversation } from '../enums';
-import { bot, supabase } from '../bot';
+import { bot, supabase } from '../platform';
 import { getNamesTable } from '../utils';
 
 export async function onDelete(ctx: CommandContext<MyContext>) {

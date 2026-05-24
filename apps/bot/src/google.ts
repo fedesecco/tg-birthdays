@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { bot, supabase } from "./bot";
+import { bot, supabase } from "./platform";
 
 const GOOGLE_AUTH_BASE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";

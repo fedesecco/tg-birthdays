@@ -1,5 +1,5 @@
 import { KeyboardButton } from "grammy/types";
-import { supabase } from "./bot";
+import { supabase } from "./platform";
 import { admins } from "./enums";
 
 export function randomNumber(min: number, max: number) {

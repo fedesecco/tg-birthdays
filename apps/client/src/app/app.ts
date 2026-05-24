@@ -1,0 +1,205 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { SessionStore } from './core/session.store';
+
+@Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  selector: 'tgb-root',
+  template: `
+    <div class="shell">
+      <header class="topbar">
+        <div class="identity">
+          <p class="eyebrow">Birthday bot</p>
+          <h1>Compleanni</h1>
+          @if (sessionStore.session(); as session) {
+            <p class="meta">
+              <span class="user-name">{{ session.name || ('Utente #' + session.userId) }}</span>
+              <span class="status-pill" [class.paused]="session.status === 'PAUSED'">
+                {{ session.status === 'SUBSCRIBED' ? 'Promemoria attivi' : 'Promemoria in pausa' }}
+              </span>
+            </p>
+          } @else {
+            <p class="meta">Caricamento sessione...</p>
+          }
+        </div>
+
+        <button class="icon-button" type="button" (click)="sessionStore.refresh()" aria-label="Aggiorna sessione">
+          Ricarica
+        </button>
+      </header>
+
+      @if (sessionStore.error()) {
+        <section class="banner error">{{ sessionStore.error() }}</section>
+      }
+
+      <main class="content">
+        <nav class="nav-strip" aria-label="Sezioni">
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+          <a routerLink="/contacts" routerLinkActive="active">Contatti</a>
+          <a routerLink="/add" routerLinkActive="active">Aggiungi</a>
+          <a routerLink="/sync" routerLinkActive="active">Google</a>
+          <a routerLink="/settings" routerLinkActive="active">Settings</a>
+        </nav>
+
+        <router-outlet />
+      </main>
+    </div>
+  `,
+  styles: `
+    :host {
+      display: block;
+      min-height: 100vh;
+      color: var(--app-text);
+    }
+
+    .shell {
+      min-height: 100vh;
+      max-width: 30rem;
+      margin: 0 auto;
+      padding: 0.85rem 0.75rem 1rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.2rem 0 0.85rem;
+      background: linear-gradient(180deg, rgba(15, 23, 32, 0.96), rgba(15, 23, 32, 0.88) 80%, rgba(15, 23, 32, 0));
+      backdrop-filter: blur(14px);
+    }
+
+    .identity {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.25rem;
+      color: var(--app-muted);
+      font-size: 0.73rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      color: var(--app-text);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      align-items: center;
+      margin: 0.45rem 0 0;
+      color: var(--app-muted);
+      font-size: 0.88rem;
+    }
+
+    .user-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 0.26rem 0.55rem;
+      background: rgba(74, 222, 128, 0.16);
+      color: #8ef0a8;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .status-pill.paused {
+      background: rgba(248, 113, 113, 0.16);
+      color: #ffb0b0;
+    }
+
+    .icon-button {
+      flex: 0 0 auto;
+      border: 1px solid var(--app-border);
+      border-radius: 999px;
+      padding: 0.72rem 0.95rem;
+      background: rgba(29, 39, 51, 0.9);
+      color: var(--app-text);
+      font: inherit;
+      font-size: 0.83rem;
+      font-weight: 700;
+    }
+
+    .content {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .nav-strip {
+      display: flex;
+      gap: 0.55rem;
+      overflow-x: auto;
+      padding-bottom: 0.15rem;
+      scrollbar-width: none;
+    }
+
+    .nav-strip::-webkit-scrollbar {
+      display: none;
+    }
+
+    .nav-strip a {
+      flex: 0 0 auto;
+      border: 1px solid var(--app-border);
+      border-radius: 999px;
+      padding: 0.68rem 0.9rem;
+      background: var(--app-surface);
+      color: var(--app-muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+    }
+
+    .nav-strip a.active {
+      border-color: rgba(132, 182, 255, 0.32);
+      background: rgba(52, 98, 156, 0.36);
+      color: var(--app-text);
+    }
+
+    .banner {
+      border-radius: 1rem;
+      padding: 0.9rem 1rem;
+    }
+
+    .banner.error {
+      background: rgba(120, 30, 40, 0.42);
+      color: #ffd9dc;
+    }
+  `,
+})
+export class App {
+  protected readonly sessionStore = inject(SessionStore);
+
+  constructor() {
+    const telegramWindow = window as Window & {
+      Telegram?: {
+        WebApp?: {
+          ready?: () => void;
+          expand?: () => void;
+        };
+      };
+    };
+
+    telegramWindow.Telegram?.WebApp?.ready?.();
+    telegramWindow.Telegram?.WebApp?.expand?.();
+    void this.sessionStore.refresh();
+  }
+}

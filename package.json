@@ -6,8 +6,6 @@
   "license": "GNU GENERAL PUBLIC LICENSE",
   "main": "dist/apps/bot/apps/bot/src/bot.js",
   "scripts": {
-    "dev": "npx nx run-many -t serve --projects=bot,client --parallel=2",
-    "build": "npx nx run-many -t build --projects=bot,client",
     "bot:serve": "npx nx serve bot",
     "bot:build": "npx nx build bot",
     "bot:start": "npx nx start bot",

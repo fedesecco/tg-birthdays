@@ -32,6 +32,16 @@ import { BackendApiService } from '../core/backend-api.service';
         }
       </div>
 
+      <label class="search-field">
+        <span class="sr-only">Cerca per nome o cognome</span>
+        <input
+          type="search"
+          [value]="searchTerm()"
+          (input)="searchTerm.set(($any($event.target).value ?? '').toString())"
+          placeholder="Cerca nome o cognome"
+        />
+      </label>
+
       @if (error()) {
         <p class="notice error">{{ error() }}</p>
       }
@@ -156,6 +166,37 @@ import { BackendApiService } from '../core/backend-api.service';
       margin-bottom: 0.85rem;
     }
 
+    .search-field {
+      display: block;
+      margin-bottom: 0.85rem;
+    }
+
+    .search-field input {
+      width: 100%;
+      border: 1px solid var(--app-border);
+      border-radius: 0.95rem;
+      background: var(--app-surface-strong);
+      color: var(--app-text);
+      padding: 0.85rem 0.95rem;
+      font: inherit;
+    }
+
+    .search-field input::placeholder {
+      color: var(--app-muted);
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .filter-chip.active {
       background: var(--app-accent-soft);
       border-color: rgba(132, 182, 255, 0.32);
@@ -260,6 +301,7 @@ export class ContactsPageComponent {
   protected readonly duplicatesLoading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly selectedFilter = signal<'all' | 'manual' | 'google'>('all');
+  protected readonly searchTerm = signal('');
   protected readonly filters = [
     { value: 'all' as const, label: 'Tutti' },
     { value: 'manual' as const, label: 'Manuali' },
@@ -268,11 +310,19 @@ export class ContactsPageComponent {
 
   protected readonly filteredContacts = computed(() => {
     const selected = this.selectedFilter();
-    if (selected === 'all') {
-      return this.contacts();
+    const queryTokens = this.normalizeForSearch(this.searchTerm())
+      .split(' ')
+      .filter(Boolean);
+    const contacts = selected === 'all' ? this.contacts() : this.contacts().filter((contact) => contact.source === selected);
+
+    if (queryTokens.length === 0) {
+      return contacts;
     }
 
-    return this.contacts().filter((contact) => contact.source === selected);
+    return contacts.filter((contact) => {
+      const haystack = this.normalizeForSearch(contact.displayName);
+      return queryTokens.every((token) => haystack.includes(token));
+    });
   });
 
   constructor() {
@@ -321,5 +371,13 @@ export class ContactsPageComponent {
   protected formatBirthDate(contact: BirthdayContact) {
     const date = `${String(contact.birthDay).padStart(2, '0')}/${String(contact.birthMonth).padStart(2, '0')}`;
     return contact.birthYear ? `${date}/${contact.birthYear}` : date;
+  }
+
+  private normalizeForSearch(value: string) {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .trim();
   }
 }

@@ -71,9 +71,17 @@ app.use(express.json());
 app.use(onRequest);
 registerApiRoutes(app);
 
+app.get("/", (_req, res) => {
+    res.status(200).send("ok");
+});
+
+app.get("/favicon.ico", (_req, res) => {
+    res.status(204).end();
+});
+
 //deploy
 if (isProduction) {
-    app.use(webhookCallback(bot, "express"));
+    app.post(Requests.telegramWebhook, webhookCallback(bot, "express"));
     /** listen */
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

@@ -31,6 +31,7 @@ export enum Requests {
     bdays = '/birthDaysOfTheDay',
     test = '/testCron',
     googleOAuthCallback = '/google/oauth/callback',
+    telegramWebhook = '/telegram/webhook',
 }
 
 export enum Messages {

@@ -1,0 +1,26 @@
+{
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "workspaceLayout": {
+        "appsDir": "apps",
+        "libsDir": "libs"
+    },
+    "targetDefaults": {
+        "build": {
+            "cache": true
+        },
+        "@angular/build:application": {
+            "cache": true,
+            "dependsOn": ["^build"],
+            "inputs": ["default", "^default"]
+        }
+    },
+    "generators": {
+        "@nx/angular:application": {
+            "e2eTestRunner": "none",
+            "linter": "none",
+            "style": "scss",
+            "unitTestRunner": "none"
+        }
+    },
+    "analytics": true
+}

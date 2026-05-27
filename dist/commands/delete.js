@@ -34,10 +34,10 @@ function deleteConversation(conversation, ctx) {
         let { count, error } = yield bot_1.supabase
             .from('birthdays')
             .delete({ count: 'exact' })
-            .eq('owner', sender)
-            .eq('name', nameToDel);
+            .eq('user_id', sender)
+            .eq('display_name', nameToDel);
         if (error) {
-            console.log(`Error on supabase.from('birthdays').delete().eq('owner', ${sender}).eq('name', ${nameToDel})`, error);
+            console.log(`Error on supabase.from('birthdays').delete().eq('user_id', ${sender}).eq('display_name', ${nameToDel})`, error);
             yield bot_1.bot.api.sendMessage(sender, enums_1.Messages.ErrorOnRequest);
         }
         else if (count && count > 0) {

@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../",
+    "outDir": "../../dist/apps/bot",
+    "types": ["node"],
+    "module": "commonjs",
+    "moduleResolution": "node"
+  },
+  "include": [],
+  "references": [{ "path": "./tsconfig.app.json" }]
+}

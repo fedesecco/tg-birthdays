@@ -1,13 +1,8 @@
 {
-    "compilerOptions": {
-        "target": "es6",
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "removeComments": true,
-        "preserveConstEnums": true,
-        "stripInternal": true,
-        "outDir": "./dist"
-    },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules", "**/*.spec.ts"]
+  "extends": "./tsconfig.base.json",
+  "files": [],
+  "references": [
+    { "path": "./apps/bot/tsconfig.app.json" },
+    { "path": "./apps/client/tsconfig.app.json" }
+  ]
 }

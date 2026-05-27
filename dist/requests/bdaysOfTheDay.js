@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.onBirthDaysOfTheDay = void 0;
 const bot_1 = require("../bot");
 const enums_1 = require("../enums");
+const telegram_1 = require("../telegram");
 const utils_1 = require("../utils");
 function onBirthDaysOfTheDay() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -19,13 +20,19 @@ function onBirthDaysOfTheDay() {
         let { data, error } = yield bot_1.supabase.from("users").select("*").eq("status", "SUBSCRIBED");
         if (error)
             console.log("Error on supabase.from(users).select(): ", error);
-        const chats = data.map((user) => user.id);
+        const chats = (data !== null && data !== void 0 ? data : []).map((user) => user.id);
         for (const subscriber of chats) {
             const msg = yield (0, utils_1.buildBdaysMsg)(subscriber);
             if (msg) {
-                yield bot_1.bot.api.sendMessage(subscriber, msg);
+                try {
+                    yield bot_1.bot.api.sendMessage(subscriber, msg);
+                }
+                catch (error) {
+                    yield (0, telegram_1.pauseUserOnUndeliverableMessage)(subscriber, error);
+                }
             }
         }
+        return;
     });
 }
 exports.onBirthDaysOfTheDay = onBirthDaysOfTheDay;

@@ -30,10 +30,14 @@ function searchConversation(conversation, ctx) {
             },
         });
         const nameToShowBday = (yield conversation.waitFor(':text')).message.text;
-        const date = rawData.filter((row) => row.name === nameToShowBday).map((row) => row.birthday)[0];
-        const day = date.substring(0, 2);
-        const month = enums_1.numberToMonth[date.substring(3, 5)];
-        yield ctx.reply(`Il compleanno di ${nameToShowBday} è il ${day} ${month}`);
+        const birthday = rawData.find((row) => row.display_name === nameToShowBday);
+        if (!birthday) {
+            yield ctx.reply(`Non ho trovato nessuno con nome "${nameToShowBday}"`);
+            return;
+        }
+        const day = birthday.birth_day.toString().padStart(2, '0');
+        const month = enums_1.numberToMonth[birthday.birth_month.toString().padStart(2, '0')];
+        yield ctx.reply(`Il compleanno di ${nameToShowBday} e' il ${day} ${month}`);
     });
 }
 exports.searchConversation = searchConversation;

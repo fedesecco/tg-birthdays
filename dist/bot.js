@@ -11,6 +11,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.supabase = exports.bot = void 0;
 const grammy_1 = require("grammy");
@@ -28,10 +29,13 @@ const testCron_1 = require("./requests/testCron");
 const bdaysOfTheDay_1 = require("./requests/bdaysOfTheDay");
 const today_1 = require("./commands/today");
 const search_1 = require("./commands/search");
+const sync_1 = require("./commands/sync");
+const google_1 = require("./google");
 dotenv_1.default.config();
-const token = process.env.TELEGRAM_TOKEN;
+const isProduction = process.env.NODE_ENV === "production";
+const token = isProduction ? process.env.TELEGRAM_TOKEN : (_a = process.env.TELEGRAM_DEV_BOT_TOKEN) !== null && _a !== void 0 ? _a : process.env.TELEGRAM_TOKEN;
 if (!token) {
-    console.error('No token!');
+    console.error("No token!");
 }
 exports.bot = new grammy_1.Bot(token);
 exports.bot.use((0, grammy_1.session)({ initial: () => ({}) }));
@@ -47,9 +51,9 @@ if (exports.supabase.storage) {
     console.log(`Login successful.`);
 }
 else
-    console.log('Fail on login');
+    console.log("Fail on login");
 exports.bot.command(enums_1.Commands.start, (ctx) => {
-    console.log('/start triggered');
+    console.log("/start triggered");
     (0, add_1.onAdd)(ctx);
 });
 exports.bot.command(enums_1.Commands.triggerBdays, today_1.onToday);
@@ -59,30 +63,53 @@ exports.bot.command(enums_1.Commands.delete, delete_1.onDelete);
 exports.bot.command(enums_1.Commands.subscribe, subscribe_1.onSubscribe);
 exports.bot.command(enums_1.Commands.unsubscribe, unsubscribe_1.onUnsubscribe);
 exports.bot.command(enums_1.Commands.search, search_1.onSearch);
+exports.bot.command(enums_1.Commands.sync, sync_1.onSync);
 const onRequest = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
-    if (req.method === 'POST' && req.path === enums_1.Requests.bdays) {
-        yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();
-        res.status(200);
-        res.send('done');
+    try {
+        if (req.method === "POST" && req.path === enums_1.Requests.bdays) {
+            yield (0, bdaysOfTheDay_1.onBirthDaysOfTheDay)();
+            res.status(200).send("done");
+            return;
+        }
+        else if (req.method === "POST" && req.path === enums_1.Requests.test) {
+            yield (0, testCron_1.onTestCron)();
+            res.status(200).send("done");
+            return;
+        }
+        else if (req.method === "GET" && req.path === enums_1.Requests.googleOAuthCallback) {
+            const code = typeof req.query.code === "string" ? req.query.code : undefined;
+            const state = typeof req.query.state === "string" ? req.query.state : undefined;
+            if (!code) {
+                res.status(400).send("Missing OAuth code");
+                return;
+            }
+            const userId = (0, google_1.verifyGoogleAuthState)(state);
+            yield (0, google_1.completeGoogleAuthAndSync)(code, userId);
+            res.status(200).send("Google account connected. Puoi tornare su Telegram.");
+            return;
+        }
+        next();
     }
-    else if (req.method === 'POST' && req.path === enums_1.Requests.test) {
-        yield (0, testCron_1.onTestCron)();
-        res.status(200);
-        res.send('done');
+    catch (error) {
+        console.error("Error in onRequest:", error);
+        res.status(500).send("Internal Server Error");
     }
-    next();
 });
-if (process.env.NODE_ENV === 'production') {
-    const app = (0, express_1.default)();
-    app.use(express_1.default.json());
-    app.use(onRequest);
-    app.use((0, grammy_1.webhookCallback)(exports.bot, 'express'));
+const app = (0, express_1.default)();
+app.use(express_1.default.json());
+app.use(onRequest);
+if (isProduction) {
+    app.use((0, grammy_1.webhookCallback)(exports.bot, "express"));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Bot listening on port ${PORT}`);
     });
 }
 else {
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+        console.log(`OAuth callback listening on port ${PORT}`);
+    });
     console.log(`Bot working on localhost`);
     exports.bot.start();
 }

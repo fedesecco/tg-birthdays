@@ -1,0 +1,49 @@
+:root {
+  color-scheme: dark;
+  --app-bg: #0f1720;
+  --app-surface: #1a2430;
+  --app-surface-strong: #202c39;
+  --app-surface-soft: #141d27;
+  --app-border: rgba(158, 175, 194, 0.16);
+  --app-text: #f3f7fb;
+  --app-muted: #8da0b4;
+  --app-accent: #69a7ff;
+  --app-accent-soft: rgba(76, 135, 219, 0.26);
+  --app-danger: #f87171;
+  --app-success: #4ade80;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--app-bg);
+}
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', sans-serif;
+  color: var(--app-text);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+}

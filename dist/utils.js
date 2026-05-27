@@ -22,29 +22,37 @@ function isAdmin(texter) {
 exports.isAdmin = isAdmin;
 function buildBdaysMsg(owner) {
     return __awaiter(this, void 0, void 0, function* () {
+        if (owner == null) {
+            return null;
+        }
         const rawDate = new Date();
-        const day = rawDate.getDate().toString().padStart(2, "0");
-        const month = (rawDate.getMonth() + 1).toString().padStart(2, "0");
-        const today = `${day}/${month}`;
-        let { data, error } = yield bot_1.supabase.from("birthdays").select("*").eq("birthday", today).eq("owner", owner);
+        const day = rawDate.getDate();
+        const month = rawDate.getMonth() + 1;
+        let { data, error } = yield bot_1.supabase
+            .from("birthdays")
+            .select("*")
+            .eq("birth_day", day)
+            .eq("birth_month", month)
+            .eq("user_id", owner);
         if (error)
             console.log("Error on supabase.from(birthdays).select(): ", error);
+        const rows = data !== null && data !== void 0 ? data : [];
         let msg = "";
-        if (data.length === 0) {
+        if (rows.length === 0) {
             msg = null;
         }
-        else if (data.length === 1) {
-            msg = `Oggi compie gli anni ${data[0].name}`;
+        else if (rows.length === 1) {
+            msg = `Oggi compie gli anni ${rows[0].display_name}`;
         }
-        else if (data.length > 1) {
+        else if (rows.length > 1) {
             msg = "Oggi compiono gli anni";
-            data.forEach((bday, i) => {
-                msg += ` ${bday.name}`;
-                i < data.length ? (msg += ", ") : (msg += ".");
+            rows.forEach((bday, i) => {
+                msg += ` ${bday.display_name}`;
+                i < rows.length - 1 ? (msg += ", ") : (msg += ".");
             });
         }
         else {
-            msg = `error, data length is ${data.length}`;
+            msg = `error, data length is ${rows.length}`;
         }
         return msg;
     });
@@ -52,11 +60,15 @@ function buildBdaysMsg(owner) {
 exports.buildBdaysMsg = buildBdaysMsg;
 function getNamesTable(user) {
     return __awaiter(this, void 0, void 0, function* () {
-        let { data, error } = yield bot_1.supabase.from("birthdays").select("*").eq("owner", user);
+        if (user == null) {
+            return { keyboard: [], rawData: [] };
+        }
+        let { data, error } = yield bot_1.supabase.from("birthdays").select("*").eq("user_id", user);
         if (error)
             console.log("Error on supabase.from(birthdays).select(): ", error);
-        let names = data.map((row) => {
-            return row.name;
+        const rows = data !== null && data !== void 0 ? data : [];
+        let names = rows.map((row) => {
+            return row.display_name;
         });
         let keyboard = [];
         names.forEach((name) => {
@@ -74,7 +86,7 @@ function getNamesTable(user) {
             else
                 return 0;
         });
-        return { keyboard: keyboard, rawData: data };
+        return { keyboard: keyboard, rawData: rows };
     });
 }
 exports.getNamesTable = getNamesTable;

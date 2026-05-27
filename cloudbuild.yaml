@@ -26,3 +26,6 @@ steps:
 
 images:
   - europe-west3-docker.pkg.dev/$PROJECT_ID/tg-birthdays/tg-bdays-bot:$TAG_NAME
+
+options:
+  logging: CLOUD_LOGGING_ONLY

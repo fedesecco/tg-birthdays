@@ -171,6 +171,7 @@ export class App {
     const telegramWindow = window as Window & {
       Telegram?: {
         WebApp?: {
+          initData?: string;
           ready?: () => void;
           expand?: () => void;
         };
@@ -179,6 +180,57 @@ export class App {
 
     telegramWindow.Telegram?.WebApp?.ready?.();
     telegramWindow.Telegram?.WebApp?.expand?.();
-    void this.sessionStore.refresh();
+    void this.initializeSession(telegramWindow);
+  }
+
+  private async initializeSession(telegramWindow: Window & {
+    Telegram?: {
+      WebApp?: {
+        initData?: string;
+        ready?: () => void;
+        expand?: () => void;
+      };
+    };
+  }) {
+    const initData = await this.waitForTelegramInitData(telegramWindow);
+    if (telegramWindow.Telegram?.WebApp && !initData) {
+      this.sessionStore.setError('Apri di nuovo la mini app da Telegram. I dati di autenticazione non sono arrivati.');
+      return;
+    }
+
+    await this.sessionStore.refresh();
+  }
+
+  private waitForTelegramInitData(
+    telegramWindow: Window & {
+      Telegram?: {
+        WebApp?: {
+          initData?: string;
+        };
+      };
+    }
+  ) {
+    return new Promise<string>((resolve) => {
+      const existing = telegramWindow.Telegram?.WebApp?.initData ?? '';
+      if (existing) {
+        resolve(existing);
+        return;
+      }
+
+      const startedAt = Date.now();
+      const interval = window.setInterval(() => {
+        const current = telegramWindow.Telegram?.WebApp?.initData ?? '';
+        if (current) {
+          window.clearInterval(interval);
+          resolve(current);
+          return;
+        }
+
+        if (Date.now() - startedAt >= 1500) {
+          window.clearInterval(interval);
+          resolve('');
+        }
+      }, 50);
+    });
   }
 }

@@ -28,4 +28,8 @@ export class SessionStore {
   updateSession(session: SessionSummary) {
     this.session.set(session);
   }
+
+  setError(message: string) {
+    this.error.set(message);
+  }
 }

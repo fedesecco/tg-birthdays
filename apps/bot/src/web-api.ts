@@ -121,6 +121,14 @@ function authMiddleware(req: AuthenticatedRequest, res: Response, next: NextFunc
         res.status(401).json({ message: "Unauthorized" });
     } catch (error) {
         const message = error instanceof Error ? error.message : "Unauthorized";
+        console.warn("Web auth failed", {
+            hasInitData: Boolean(req.header("x-telegram-init-data")),
+            message,
+            method: req.method,
+            path: req.path,
+            query: req.query,
+            userAgent: req.header("user-agent") ?? null,
+        });
         res.status(401).json({ message });
     }
 }

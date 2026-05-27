@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import {
   BirthdayContact,
+  ContactListResponse,
   DuplicateCandidate,
   GoogleSyncResult,
   ManualContactInput,
@@ -28,9 +29,24 @@ export class BackendApiService {
     );
   }
 
-  async getContacts() {
+  async getContacts(params?: { limit?: number; offset?: number; query?: string; source?: 'all' | 'manual' | 'google' }) {
+    const searchParams = new URLSearchParams();
+    if (params?.limit != null) {
+      searchParams.set('limit', String(params.limit));
+    }
+    if (params?.offset != null) {
+      searchParams.set('offset', String(params.offset));
+    }
+    if (params?.query) {
+      searchParams.set('query', params.query);
+    }
+    if (params?.source && params.source !== 'all') {
+      searchParams.set('source', params.source);
+    }
+
+    const queryString = searchParams.toString();
     return firstValueFrom(
-      this.http.get<{ contacts: BirthdayContact[] }>(`${this.baseUrl}/contacts`, {
+      this.http.get<ContactListResponse>(`${this.baseUrl}/contacts${queryString ? `?${queryString}` : ''}`, {
         headers: this.authHeaders(),
       })
     );
@@ -54,7 +70,7 @@ export class BackendApiService {
 
   async mergeDuplicates(pairs: MergeDuplicateRequest[]) {
     return firstValueFrom(
-      this.http.post<{ contacts: BirthdayContact[]; duplicates: DuplicateCandidate[] }>(
+      this.http.post<{ duplicates: DuplicateCandidate[] }>(
         `${this.baseUrl}/contacts/duplicates/merge`,
         { pairs },
         {

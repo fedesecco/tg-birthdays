@@ -1,6 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, computed, inject, signal } from '@angular/core';
 import { BirthdayContact, DuplicateCandidate } from '@tg-birthdays/shared-types';
 import { BackendApiService } from '../core/backend-api.service';
+
+const PAGE_SIZE = 20;
+const SEARCH_DEBOUNCE_MS = 250;
+const MONTH_NAMES = [
+  'gennaio',
+  'febbraio',
+  'marzo',
+  'aprile',
+  'maggio',
+  'giugno',
+  'luglio',
+  'agosto',
+  'settembre',
+  'ottobre',
+  'novembre',
+  'dicembre',
+] as const;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -11,25 +28,25 @@ import { BackendApiService } from '../core/backend-api.service';
           <p class="kicker">Archivio</p>
           <h2>Contatti</h2>
         </div>
-        <div class="actions">
-          <button type="button" class="secondary-button" (click)="loadContacts()">Aggiorna</button>
-          <button type="button" class="primary-button" (click)="scanDuplicates()" [disabled]="duplicatesLoading()">
-            {{ duplicatesLoading() ? 'Analisi...' : 'Trova doppi' }}
-          </button>
-        </div>
       </div>
 
-      <div class="filter-row" role="tablist" aria-label="Filtri origine">
-        @for (source of filters; track source.value) {
-          <button
-            type="button"
-            class="filter-chip"
-            [class.active]="selectedFilter() === source.value"
-            (click)="selectedFilter.set(source.value)"
-          >
-            {{ source.label }}
-          </button>
-        }
+      <div class="toolbar">
+        <div class="filter-row" role="tablist" aria-label="Filtri origine">
+          @for (source of filters; track source.value) {
+            <button
+              type="button"
+              class="filter-chip"
+              [class.active]="selectedFilter() === source.value"
+              (click)="applyFilter(source.value)"
+            >
+              {{ source.label }}
+            </button>
+          }
+        </div>
+
+        <button type="button" class="primary-button" (click)="scanDuplicates()" [disabled]="duplicatesLoading()">
+          {{ duplicatesLoading() ? 'Analisi...' : 'Trova doppi' }}
+        </button>
       </div>
 
       <label class="search-field">
@@ -37,7 +54,7 @@ import { BackendApiService } from '../core/backend-api.service';
         <input
           type="search"
           [value]="searchTerm()"
-          (input)="searchTerm.set(($any($event.target).value ?? '').toString())"
+          (input)="onSearchInput(($any($event.target).value ?? '').toString())"
           placeholder="Cerca nome o cognome"
         />
       </label>
@@ -46,18 +63,41 @@ import { BackendApiService } from '../core/backend-api.service';
         <p class="notice error">{{ error() }}</p>
       }
 
-      <div class="list">
-        @for (contact of filteredContacts(); track contact.id) {
-          <article class="row-card">
-            <div class="row-main">
-              <strong>{{ contact.displayName }}</strong>
-              <span>{{ formatBirthDate(contact) }}</span>
-            </div>
-            <span class="source-pill" [class.google]="contact.source === 'google'">{{ contact.source }}</span>
-          </article>
-        } @empty {
-          <p class="notice">Nessun contatto per questo filtro.</p>
-        }
+      @if (loading()) {
+        <p class="notice">Caricamento contatti...</p>
+      } @else {
+        <div class="list">
+          @for (contact of contacts(); track contact.id) {
+            <article class="row-card">
+              <div class="row-main">
+                <strong>{{ contact.displayName }}</strong>
+                <span>{{ formatBirthDate(contact) }}</span>
+              </div>
+              <span class="source-pill" [class.google]="contact.source === 'google'">{{ contact.source }}</span>
+            </article>
+          } @empty {
+            <p class="notice">Nessun contatto per questa ricerca.</p>
+          }
+        </div>
+      }
+
+      <div class="pagination">
+        <p class="page-summary">
+          @if (total() > 0) {
+            {{ visibleRangeLabel() }} di {{ total() }}
+          } @else {
+            0 risultati
+          }
+        </p>
+
+        <div class="page-actions">
+          <button type="button" class="secondary-button" (click)="goToPreviousPage()" [disabled]="!canGoPrevious() || loading()">
+            Indietro
+          </button>
+          <button type="button" class="secondary-button" (click)="goToNextPage()" [disabled]="!canGoNext() || loading()">
+            Avanti
+          </button>
+        </div>
       </div>
     </section>
 
@@ -117,10 +157,13 @@ import { BackendApiService } from '../core/backend-api.service';
       margin-bottom: 1rem;
     }
 
-    .actions {
+    .toolbar {
       display: flex;
-      gap: 0.6rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
       flex-wrap: wrap;
+      margin-bottom: 0.85rem;
     }
 
     .kicker {
@@ -163,7 +206,6 @@ import { BackendApiService } from '../core/backend-api.service';
       display: flex;
       gap: 0.55rem;
       flex-wrap: wrap;
-      margin-bottom: 0.85rem;
     }
 
     .search-field {
@@ -236,7 +278,8 @@ import { BackendApiService } from '../core/backend-api.service';
     .row-main span,
     .duplicate-card p,
     .duplicate-card small,
-    .notice {
+    .notice,
+    .page-summary {
       color: var(--app-muted);
       font-size: 0.82rem;
       line-height: 1.35;
@@ -269,6 +312,20 @@ import { BackendApiService } from '../core/backend-api.service';
       color: #ffd9dc;
     }
 
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-top: 0.85rem;
+    }
+
+    .page-actions {
+      display: flex;
+      gap: 0.55rem;
+    }
+
     .duplicate-card {
       display: grid;
       gap: 0.55rem;
@@ -293,49 +350,111 @@ import { BackendApiService } from '../core/backend-api.service';
     }
   `,
 })
-export class ContactsPageComponent {
+export class ContactsPageComponent implements OnDestroy {
   private readonly api = inject(BackendApiService);
+  private searchDebounceTimer: number | null = null;
 
   protected readonly contacts = signal<BirthdayContact[]>([]);
   protected readonly duplicates = signal<DuplicateCandidate[]>([]);
   protected readonly duplicatesLoading = signal(false);
+  protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly selectedFilter = signal<'all' | 'manual' | 'google'>('all');
   protected readonly searchTerm = signal('');
+  protected readonly total = signal(0);
+  protected readonly offset = signal(0);
   protected readonly filters = [
     { value: 'all' as const, label: 'Tutti' },
     { value: 'manual' as const, label: 'Manuali' },
     { value: 'google' as const, label: 'Google' },
   ];
 
-  protected readonly filteredContacts = computed(() => {
-    const selected = this.selectedFilter();
-    const queryTokens = this.normalizeForSearch(this.searchTerm())
-      .split(' ')
-      .filter(Boolean);
-    const contacts = selected === 'all' ? this.contacts() : this.contacts().filter((contact) => contact.source === selected);
-
-    if (queryTokens.length === 0) {
-      return contacts;
+  protected readonly canGoPrevious = computed(() => this.offset() > 0);
+  protected readonly canGoNext = computed(() => this.offset() + this.contacts().length < this.total());
+  protected readonly visibleRangeLabel = computed(() => {
+    const total = this.total();
+    if (total === 0) {
+      return '0';
     }
 
-    return contacts.filter((contact) => {
-      const haystack = this.normalizeForSearch(contact.displayName);
-      return queryTokens.every((token) => haystack.includes(token));
-    });
+    const start = this.offset() + 1;
+    const end = this.offset() + this.contacts().length;
+    return `${start}-${end}`;
   });
 
   constructor() {
     void this.loadContacts();
   }
 
+  ngOnDestroy() {
+    if (this.searchDebounceTimer !== null) {
+      window.clearTimeout(this.searchDebounceTimer);
+    }
+  }
+
+  protected onSearchInput(value: string) {
+    this.searchTerm.set(value);
+    this.offset.set(0);
+    this.duplicates.set([]);
+
+    if (this.searchDebounceTimer !== null) {
+      window.clearTimeout(this.searchDebounceTimer);
+    }
+
+    this.searchDebounceTimer = window.setTimeout(() => {
+      void this.loadContacts();
+    }, SEARCH_DEBOUNCE_MS);
+  }
+
+  protected applyFilter(filter: 'all' | 'manual' | 'google') {
+    if (this.selectedFilter() === filter) {
+      return;
+    }
+
+    this.selectedFilter.set(filter);
+    this.offset.set(0);
+    this.duplicates.set([]);
+    void this.loadContacts();
+  }
+
+  protected goToPreviousPage() {
+    if (!this.canGoPrevious()) {
+      return;
+    }
+
+    this.offset.update((current) => Math.max(0, current - PAGE_SIZE));
+    this.duplicates.set([]);
+    void this.loadContacts();
+  }
+
+  protected goToNextPage() {
+    if (!this.canGoNext()) {
+      return;
+    }
+
+    this.offset.update((current) => current + PAGE_SIZE);
+    this.duplicates.set([]);
+    void this.loadContacts();
+  }
+
   protected async loadContacts() {
+    this.loading.set(true);
     this.error.set(null);
+
     try {
-      const response = await this.api.getContacts();
+      const response = await this.api.getContacts({
+        limit: PAGE_SIZE,
+        offset: this.offset(),
+        query: this.searchTerm().trim(),
+        source: this.selectedFilter(),
+      });
       this.contacts.set(response.contacts);
+      this.total.set(response.total);
+      this.offset.set(response.offset);
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Errore caricamento contatti');
+    } finally {
+      this.loading.set(false);
     }
   }
 
@@ -361,23 +480,16 @@ export class ContactsPageComponent {
           duplicateContactId: candidate.duplicate.id,
         }))
       );
-      this.contacts.set(response.contacts);
       this.duplicates.set(response.duplicates);
+      void this.loadContacts();
     } catch (error) {
       this.error.set(error instanceof Error ? error.message : 'Errore merge duplicati');
     }
   }
 
   protected formatBirthDate(contact: BirthdayContact) {
-    const date = `${String(contact.birthDay).padStart(2, '0')}/${String(contact.birthMonth).padStart(2, '0')}`;
-    return contact.birthYear ? `${date}/${contact.birthYear}` : date;
-  }
-
-  private normalizeForSearch(value: string) {
-    return value
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .trim();
+    const monthName = MONTH_NAMES[contact.birthMonth - 1];
+    const date = `${contact.birthDay} ${monthName ?? contact.birthMonth}`;
+    return contact.birthYear ? `${date} ${contact.birthYear}` : date;
   }
 }

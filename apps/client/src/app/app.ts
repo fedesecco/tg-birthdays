@@ -11,13 +11,11 @@ import { SessionStore } from './core/session.store';
       <header class="topbar">
         <div class="identity">
           <p class="eyebrow">Birthday bot</p>
-          <h1>Compleanni</h1>
           @if (sessionStore.session(); as session) {
             <p class="meta">
-              <span class="user-name">{{ session.name || ('Utente #' + session.userId) }}</span>
-              <span class="status-pill" [class.paused]="session.status === 'PAUSED'">
-                {{ session.status === 'SUBSCRIBED' ? 'Promemoria attivi' : 'Promemoria in pausa' }}
-              </span>
+              @if (session.name) {
+                <span class="user-name">{{ session.name }}</span>
+              }
             </p>
           } @else {
             <p class="meta">Caricamento sessione...</p>
@@ -38,8 +36,6 @@ import { SessionStore } from './core/session.store';
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
           <a routerLink="/contacts" routerLinkActive="active">Contatti</a>
           <a routerLink="/add" routerLinkActive="active">Aggiungi</a>
-          <a routerLink="/sync" routerLinkActive="active">Google</a>
-          <a routerLink="/settings" routerLinkActive="active">Settings</a>
         </nav>
 
         <router-outlet />
@@ -110,23 +106,6 @@ import { SessionStore } from './core/session.store';
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      border-radius: 999px;
-      padding: 0.26rem 0.55rem;
-      background: rgba(74, 222, 128, 0.16);
-      color: #8ef0a8;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-
-    .status-pill.paused {
-      background: rgba(248, 113, 113, 0.16);
-      color: #ffb0b0;
-    }
-
     .icon-button {
       flex: 0 0 auto;
       border: 1px solid var(--app-border);

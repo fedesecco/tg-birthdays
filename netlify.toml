@@ -1,0 +1,3 @@
+[build]
+command = "npx nx build client"
+publish = "dist/apps/client/browser"

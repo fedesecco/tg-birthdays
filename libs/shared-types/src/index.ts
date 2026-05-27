@@ -15,6 +15,13 @@ export interface BirthdayContact {
   updatedAt?: string;
 }
 
+export interface ContactListResponse {
+  contacts: BirthdayContact[];
+  limit: number;
+  offset: number;
+  total: number;
+}
+
 export interface SessionSummary {
   userId: number;
   name: string | null;

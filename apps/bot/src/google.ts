@@ -7,6 +7,7 @@ const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 const GOOGLE_CONNECTIONS_URL = "https://people.googleapis.com/v1/people/me/connections";
 const GOOGLE_SCOPES = ["openid", "email", "https://www.googleapis.com/auth/contacts.readonly"];
 const OAUTH_STATE_TTL_MS = 15 * 60 * 1000;
+const GOOGLE_SYNC_COOLDOWN_MS = 60 * 60 * 1000;
 
 type GoogleTokenResponse = {
     access_token: string;
@@ -91,6 +92,20 @@ export type GoogleSyncResult = {
     updatedCount: number;
     rows: GoogleSyncReportRow[];
 };
+
+export class GoogleSyncCooldownError extends Error {
+    nextAllowedAt: string;
+    retryAfterSeconds: number;
+
+    constructor(nextAllowedAt: Date) {
+        const nextAllowedAtIso = nextAllowedAt.toISOString();
+        const retryAfterSeconds = Math.max(1, Math.ceil((nextAllowedAt.getTime() - Date.now()) / 1000));
+        super(`Sync disponibile di nuovo alle ${formatSyncCooldownDate(nextAllowedAt)}.`);
+        this.name = "GoogleSyncCooldownError";
+        this.nextAllowedAt = nextAllowedAtIso;
+        this.retryAfterSeconds = retryAfterSeconds;
+    }
+}
 
 function requiredEnv(name: string): string {
     const value = process.env[name];
@@ -295,6 +310,31 @@ async function refreshGoogleAccessToken(userId: number) {
     return tokenData.access_token;
 }
 
+async function assertGoogleSyncAllowed(userId: number) {
+    const { data, error } = await supabase
+        .from("users")
+        .select("google_last_synced_at")
+        .eq("id", userId)
+        .single();
+    if (error) {
+        throw error;
+    }
+
+    if (!data.google_last_synced_at) {
+        return;
+    }
+
+    const lastSyncedAt = Date.parse(data.google_last_synced_at);
+    if (Number.isNaN(lastSyncedAt)) {
+        return;
+    }
+
+    const nextAllowedAt = new Date(lastSyncedAt + GOOGLE_SYNC_COOLDOWN_MS);
+    if (nextAllowedAt.getTime() > Date.now()) {
+        throw new GoogleSyncCooldownError(nextAllowedAt);
+    }
+}
+
 function pickDisplayName(names: GoogleName[] | undefined) {
     if (!names?.length) {
         return null;
@@ -392,6 +432,7 @@ async function listGoogleContacts(accessToken: string) {
 
 export async function syncGoogleContacts(userId: number) {
     try {
+        await assertGoogleSyncAllowed(userId);
         const accessToken = await refreshGoogleAccessToken(userId);
         const { imported: contacts, missingBirthday } = await listGoogleContacts(accessToken);
         const dedupedContacts = new Map<string, GoogleImportedContact>();
@@ -544,9 +585,21 @@ export async function isGoogleConnected(userId: number) {
 
 export async function completeGoogleAuthAndSync(code: string, userId: number) {
     await exchangeGoogleCode(code, userId);
-    const result = await syncGoogleContacts(userId);
-    for (const message of formatGoogleSyncReport(result)) {
-        await bot.api.sendMessage(userId, message, { parse_mode: "HTML" });
+    try {
+        const result = await syncGoogleContacts(userId);
+        for (const message of formatGoogleSyncReport(result)) {
+            await bot.api.sendMessage(userId, message, { parse_mode: "HTML" });
+        }
+    } catch (error) {
+        if (error instanceof GoogleSyncCooldownError) {
+            await bot.api.sendMessage(
+                userId,
+                `Account Google collegato. ${error.message}`
+            );
+            return;
+        }
+
+        throw error;
     }
 }
 
@@ -610,6 +663,16 @@ function escapeHtml(value: string) {
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
+}
+
+function formatSyncCooldownDate(value: Date) {
+    return new Intl.DateTimeFormat("it-IT", {
+        day: "2-digit",
+        month: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+    }).format(value);
 }
 
 export function formatGoogleSyncReport(result: GoogleSyncResult) {

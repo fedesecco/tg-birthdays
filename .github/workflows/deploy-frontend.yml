@@ -1,0 +1,26 @@
+name: Deploy Frontend
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Ensure tagged commit belongs to main
+        run: |
+          git fetch origin main
+          git branch -r --contains "$GITHUB_SHA" | grep "origin/main"
+
+      - name: Trigger Netlify production deploy
+        run: curl -X POST -d '{}' "$NETLIFY_BUILD_HOOK"
+        env:
+          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}

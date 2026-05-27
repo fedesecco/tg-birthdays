@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "crypto";
 import express, { NextFunction, Request, Response } from "express";
 import {
     BirthdayContact,
+    ContactListResponse,
     DuplicateCandidate,
     GoogleSyncResult,
     ManualContactInput,
@@ -9,7 +10,13 @@ import {
     ReminderStatus,
     SessionSummary,
 } from "@tg-birthdays/shared-types";
-import { buildGoogleAuthUrl, ensureUserRecord, isGoogleConnected, syncGoogleContacts } from "./google";
+import {
+    buildGoogleAuthUrl,
+    ensureUserRecord,
+    GoogleSyncCooldownError,
+    isGoogleConnected,
+    syncGoogleContacts,
+} from "./google";
 import { supabase } from "./platform";
 
 type TelegramInitDataUser = {
@@ -171,7 +178,55 @@ async function getSessionSummary(userId: number): Promise<SessionSummary> {
     };
 }
 
-async function listContacts(userId: number) {
+async function listContacts(
+    userId: number,
+    options?: { limit?: number; offset?: number; query?: string; source?: BirthdayContact["source"] | "all" }
+): Promise<ContactListResponse> {
+    const limit = Math.min(Math.max(options?.limit ?? 20, 1), 100);
+    const offset = Math.max(options?.offset ?? 0, 0);
+    const query = options?.query?.trim() ?? "";
+    const source = options?.source ?? "all";
+
+    let request = supabase
+        .from("birthdays")
+        .select("id, display_name, birth_day, birth_month, birth_year, source, external_contact_id, google_contact_etag, created_at, updated_at")
+        .eq("user_id", userId)
+        .order("display_name", { ascending: true })
+        .range(offset, offset + limit - 1);
+
+    let countRequest = supabase
+        .from("birthdays")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+    if (source !== "all") {
+        request = request.eq("source", source);
+        countRequest = countRequest.eq("source", source);
+    }
+
+    if (query) {
+        request = request.ilike("display_name", `%${query}%`);
+        countRequest = countRequest.ilike("display_name", `%${query}%`);
+    }
+
+    const [{ data, error }, { count, error: countError }] = await Promise.all([request, countRequest]);
+
+    if (error) {
+        throw error;
+    }
+    if (countError) {
+        throw countError;
+    }
+
+    return {
+        contacts: (data ?? []).map((row) => mapBirthdayContact(row)),
+        limit,
+        offset,
+        total: count ?? data?.length ?? 0,
+    };
+}
+
+async function listAllContacts(userId: number) {
     const { data, error } = await supabase
         .from("birthdays")
         .select("id, display_name, birth_day, birth_month, birth_year, source, external_contact_id, google_contact_etag, created_at, updated_at")
@@ -400,8 +455,12 @@ export function registerApiRoutes(app: express.Express) {
 
     router.get("/contacts", asyncRoute(async (req, res) => {
         await ensureUserRecord(req.authUser!.id, req.authUser!.name);
-        const contacts = await listContacts(req.authUser!.id);
-        res.json({ contacts });
+        const limit = typeof req.query.limit === "string" ? Number.parseInt(req.query.limit, 10) : undefined;
+        const offset = typeof req.query.offset === "string" ? Number.parseInt(req.query.offset, 10) : undefined;
+        const query = typeof req.query.query === "string" ? req.query.query : undefined;
+        const source = req.query.source === "manual" || req.query.source === "google" ? req.query.source : "all";
+        const response = await listContacts(req.authUser!.id, { limit, offset, query, source });
+        res.json(response);
     }));
 
     router.post("/contacts/manual", asyncRoute(async (req, res) => {
@@ -412,7 +471,7 @@ export function registerApiRoutes(app: express.Express) {
 
     router.get("/contacts/duplicates", asyncRoute(async (req, res) => {
         await ensureUserRecord(req.authUser!.id, req.authUser!.name);
-        const contacts = await listContacts(req.authUser!.id);
+        const contacts = await listAllContacts(req.authUser!.id);
         const duplicates = findDuplicateCandidates(contacts);
         res.json({ duplicates });
     }));
@@ -424,9 +483,9 @@ export function registerApiRoutes(app: express.Express) {
             await mergeDuplicatePair(req.authUser!.id, pair);
         }
 
-        const contacts = await listContacts(req.authUser!.id);
-        const duplicates = findDuplicateCandidates(contacts);
-        res.json({ contacts, duplicates });
+        const allContacts = await listAllContacts(req.authUser!.id);
+        const duplicates = findDuplicateCandidates(allContacts);
+        res.json({ duplicates });
     }));
 
     router.get("/google/auth-url", asyncRoute(async (req, res) => {
@@ -449,7 +508,23 @@ export function registerApiRoutes(app: express.Express) {
             return;
         }
 
-        const result = await syncGoogleContacts(req.authUser!.id);
+        let result;
+        try {
+            result = await syncGoogleContacts(req.authUser!.id);
+        } catch (error) {
+            if (error instanceof GoogleSyncCooldownError) {
+                res.status(429).set("Retry-After", String(error.retryAfterSeconds)).json({
+                    connected: true,
+                    message: error.message,
+                    nextAllowedAt: error.nextAllowedAt,
+                    retryAfterSeconds: error.retryAfterSeconds,
+                });
+                return;
+            }
+
+            throw error;
+        }
+
         res.json({
             connected: true,
             result: mapGoogleSyncResult(result),

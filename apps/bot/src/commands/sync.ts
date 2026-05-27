@@ -1,5 +1,12 @@
 import { CommandContext } from "grammy";
-import { buildGoogleAuthUrl, ensureUserRecord, formatGoogleSyncReport, isGoogleConnected, syncGoogleContacts } from "../google";
+import {
+    buildGoogleAuthUrl,
+    ensureUserRecord,
+    formatGoogleSyncReport,
+    GoogleSyncCooldownError,
+    isGoogleConnected,
+    syncGoogleContacts,
+} from "../google";
 import { Commands, Messages, MyContext } from "../enums";
 
 export async function onSync(ctx: CommandContext<MyContext>) {
@@ -25,6 +32,11 @@ export async function onSync(ctx: CommandContext<MyContext>) {
         }
     } catch (error) {
         console.log("Error during /sync: ", error);
+        if (error instanceof GoogleSyncCooldownError) {
+            await ctx.reply(error.message);
+            return;
+        }
+
         const message = error instanceof Error ? error.message : "";
         if (message.includes("invalid_grant") || message.includes("Google account not connected")) {
             const authUrl = buildGoogleAuthUrl(sender);

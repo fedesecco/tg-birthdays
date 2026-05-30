@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { SessionStore } from './core/session.store';
+import { getTelegramInitData, getTelegramWindow } from './core/telegram-webapp';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -168,30 +169,14 @@ export class App {
   protected readonly sessionStore = inject(SessionStore);
 
   constructor() {
-    const telegramWindow = window as Window & {
-      Telegram?: {
-        WebApp?: {
-          initData?: string;
-          ready?: () => void;
-          expand?: () => void;
-        };
-      };
-    };
+    const telegramWindow = getTelegramWindow();
 
     telegramWindow.Telegram?.WebApp?.ready?.();
     telegramWindow.Telegram?.WebApp?.expand?.();
     void this.initializeSession(telegramWindow);
   }
 
-  private async initializeSession(telegramWindow: Window & {
-    Telegram?: {
-      WebApp?: {
-        initData?: string;
-        ready?: () => void;
-        expand?: () => void;
-      };
-    };
-  }) {
+  private async initializeSession(telegramWindow: ReturnType<typeof getTelegramWindow>) {
     const initData = await this.waitForTelegramInitData(telegramWindow);
     if (telegramWindow.Telegram?.WebApp && !initData) {
       this.sessionStore.setError('Apri di nuovo la mini app da Telegram. I dati di autenticazione non sono arrivati.');
@@ -202,16 +187,10 @@ export class App {
   }
 
   private waitForTelegramInitData(
-    telegramWindow: Window & {
-      Telegram?: {
-        WebApp?: {
-          initData?: string;
-        };
-      };
-    }
+    telegramWindow: ReturnType<typeof getTelegramWindow>
   ) {
     return new Promise<string>((resolve) => {
-      const existing = telegramWindow.Telegram?.WebApp?.initData ?? '';
+      const existing = getTelegramInitData();
       if (existing) {
         resolve(existing);
         return;
@@ -219,7 +198,7 @@ export class App {
 
       const startedAt = Date.now();
       const interval = window.setInterval(() => {
-        const current = telegramWindow.Telegram?.WebApp?.initData ?? '';
+        const current = getTelegramInitData();
         if (current) {
           window.clearInterval(interval);
           resolve(current);

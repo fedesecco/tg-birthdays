@@ -11,6 +11,7 @@ import {
 } from '@tg-birthdays/shared-types';
 import { firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from './api-base-url';
+import { getTelegramInitData } from './telegram-webapp';
 
 type SyncResponse =
   | { connected: true; result: GoogleSyncResult }
@@ -121,14 +122,6 @@ export class BackendApiService {
   }
 
   private telegramInitData() {
-    const telegramWindow = window as Window & {
-      Telegram?: {
-        WebApp?: {
-          initData?: string;
-        };
-      };
-    };
-
-    return telegramWindow.Telegram?.WebApp?.initData ?? '';
+    return getTelegramInitData();
   }
 }

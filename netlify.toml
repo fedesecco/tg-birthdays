@@ -1,2 +1,8 @@
 [build]
 command = "npx nx build client"
+publish = "dist/apps/client/browser"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200

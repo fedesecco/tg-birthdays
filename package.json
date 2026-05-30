@@ -29,6 +29,7 @@
     "@swc/helpers": "~0.5.18",
     "@types/express": "^4.17.17",
     "@types/node-fetch": "^2.6.3",
+    "cypress": "^15.16.0",
     "nx": "22.7.3",
     "prettier": "~3.6.2",
     "supabase": "^1.115.5",

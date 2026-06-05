@@ -12,8 +12,10 @@ import {
 } from "@tg-birthdays/shared-types";
 import {
     buildGoogleAuthUrl,
+    disconnectGoogleAccount,
     ensureUserRecord,
     GoogleSyncCooldownError,
+    isGoogleInvalidGrantError,
     isGoogleConnected,
     syncGoogleContacts,
 } from "./google";
@@ -530,6 +532,16 @@ export function registerApiRoutes(app: express.Express) {
                 return;
             }
 
+            if (isGoogleInvalidGrantError(error)) {
+                await disconnectGoogleAccount(req.authUser!.id);
+                res.status(409).json({
+                    connected: false,
+                    authUrl: buildGoogleAuthUrl(req.authUser!.id),
+                    message: "Il collegamento Google non e piu valido. Effettua di nuovo l'accesso.",
+                });
+                return;
+            }
+
             throw error;
         }
 
@@ -537,6 +549,13 @@ export function registerApiRoutes(app: express.Express) {
             connected: true,
             result: mapGoogleSyncResult(result),
         });
+    }));
+
+    router.post("/google/disconnect", asyncRoute(async (req, res) => {
+        await ensureUserRecord(req.authUser!.id, req.authUser!.name);
+        await disconnectGoogleAccount(req.authUser!.id);
+        const session = await getSessionSummary(req.authUser!.id);
+        res.json({ session });
     }));
 
     router.patch("/settings/reminders", asyncRoute(async (req, res) => {

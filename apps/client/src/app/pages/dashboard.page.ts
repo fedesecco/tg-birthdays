@@ -78,14 +78,27 @@ const GOOGLE_SYNC_COOLDOWN_MS = 60 * 60 * 1000;
           </p>
         }
 
-        <button
-          type="button"
-          class="primary-button"
-          (click)="handleGoogleAction()"
-          [disabled]="googleButtonDisabled()"
-        >
-          {{ googleButtonLabel() }}
-        </button>
+        <div class="action-row">
+          <button
+            type="button"
+            class="primary-button"
+            (click)="handleGoogleAction()"
+            [disabled]="googleButtonDisabled()"
+          >
+            {{ googleButtonLabel() }}
+          </button>
+
+          @if (session.googleConnected) {
+            <button
+              type="button"
+              class="secondary-button"
+              (click)="disconnectGoogle()"
+              [disabled]="googleLoading()"
+            >
+              {{ googleLoading() ? 'Attendere...' : 'Disconnetti Google' }}
+            </button>
+          }
+        </div>
 
         @if (googleMessage()) {
           <p class="notice success">{{ googleMessage() }}</p>
@@ -198,7 +211,24 @@ const GOOGLE_SYNC_COOLDOWN_MS = 60 * 60 * 1000;
       font-weight: 700;
     }
 
-    .primary-button:disabled {
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+    }
+
+    .secondary-button {
+      border: 1px solid var(--app-border);
+      border-radius: 999px;
+      padding: 0.8rem 1rem;
+      background: transparent;
+      color: var(--app-text);
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .primary-button:disabled,
+    .secondary-button:disabled {
       opacity: 0.55;
     }
 
@@ -228,6 +258,7 @@ export class DashboardPageComponent {
   protected readonly googleLoading = signal(false);
   protected readonly googleError = signal<string | null>(null);
   protected readonly googleMessage = signal<string | null>(null);
+  protected readonly googleReconnectRequired = signal(false);
 
   protected readonly nextSyncAt = computed(() => {
     const lastSyncedAt = this.sessionStore.session()?.googleLastSyncedAt;
@@ -268,6 +299,10 @@ export class DashboardPageComponent {
       return session.googleConnected ? 'Sync in corso...' : 'Apertura login...';
     }
 
+    if (!session.googleConnected && this.googleReconnectRequired()) {
+      return 'Ricollega Google';
+    }
+
     return session.googleConnected ? 'Sync Google' : 'Login Google';
   });
 
@@ -303,20 +338,44 @@ export class DashboardPageComponent {
     try {
       if (!session.googleConnected) {
         const response = await this.api.getGoogleAuthUrl();
+        this.googleReconnectRequired.set(false);
         this.openGoogleAuth(response.authUrl);
         return;
       }
 
       const response = await this.api.syncGoogle();
       if (!response.connected) {
+        if (response.message) {
+          this.googleMessage.set(response.message);
+        }
+        this.googleReconnectRequired.set(true);
+        await this.sessionStore.refresh();
         this.openGoogleAuth(response.authUrl);
         return;
       }
 
+      this.googleReconnectRequired.set(false);
       this.googleMessage.set(this.buildSyncSummary(response.result));
       await this.sessionStore.refresh();
     } catch (error) {
       this.googleError.set(this.readApiError(error, 'Sync Google fallita'));
+    } finally {
+      this.googleLoading.set(false);
+    }
+  }
+
+  protected async disconnectGoogle() {
+    this.googleLoading.set(true);
+    this.googleError.set(null);
+    this.googleMessage.set(null);
+
+    try {
+      const response = await this.api.disconnectGoogle();
+      this.googleReconnectRequired.set(false);
+      this.sessionStore.updateSession(response.session);
+      this.googleMessage.set('Account Google disconnesso.');
+    } catch (error) {
+      this.googleError.set(this.readApiError(error, 'Disconnessione Google fallita'));
     } finally {
       this.googleLoading.set(false);
     }

@@ -3,6 +3,7 @@ import { bot, supabase } from "./platform";
 
 const GOOGLE_AUTH_BASE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+const GOOGLE_REVOKE_URL = "https://oauth2.googleapis.com/revoke";
 const GOOGLE_USERINFO_URL = "https://openidconnect.googleapis.com/v1/userinfo";
 const GOOGLE_CONNECTIONS_URL = "https://people.googleapis.com/v1/people/me/connections";
 const GOOGLE_SCOPES = ["openid", "email", "https://www.googleapis.com/auth/contacts.readonly"];
@@ -195,6 +196,19 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
     return (await response.json()) as T;
 }
 
+async function revokeGoogleToken(token: string) {
+    const response = await fetch(GOOGLE_REVOKE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ token }),
+    });
+
+    if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Google revoke failed (${response.status}): ${body}`);
+    }
+}
+
 async function saveGoogleAccount(
     userId: number,
     tokenData: GoogleTokenResponse,
@@ -308,6 +322,46 @@ async function refreshGoogleAccessToken(userId: number) {
     );
 
     return tokenData.access_token;
+}
+
+export function isGoogleInvalidGrantError(error: unknown) {
+    return error instanceof Error && error.message.includes("invalid_grant");
+}
+
+export async function disconnectGoogleAccount(userId: number) {
+    const { data, error } = await supabase
+        .from("users")
+        .select("google_access_token, google_refresh_token")
+        .eq("id", userId)
+        .single();
+    if (error) {
+        throw error;
+    }
+
+    const tokenToRevoke = data.google_refresh_token ?? data.google_access_token;
+    if (tokenToRevoke) {
+        try {
+            await revokeGoogleToken(tokenToRevoke);
+        } catch (revokeError) {
+            if (!isGoogleInvalidGrantError(revokeError)) {
+                throw revokeError;
+            }
+        }
+    }
+
+    const { error: updateError } = await supabase.from("users").update({
+        google_access_token: null,
+        google_email: null,
+        google_last_synced_at: null,
+        google_refresh_token: null,
+        google_subject: null,
+        google_sync_enabled: false,
+        google_sync_error: null,
+        google_token_expires_at: null,
+    }).eq("id", userId);
+    if (updateError) {
+        throw updateError;
+    }
 }
 
 async function assertGoogleSyncAllowed(userId: number) {

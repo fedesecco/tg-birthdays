@@ -15,7 +15,7 @@ import { getTelegramInitData } from './telegram-webapp';
 
 type SyncResponse =
   | { connected: true; result: GoogleSyncResult }
-  | { connected: false; authUrl: string };
+  | { connected: false; authUrl: string; message?: string };
 
 @Injectable({ providedIn: 'root' })
 export class BackendApiService {
@@ -92,6 +92,12 @@ export class BackendApiService {
   async syncGoogle() {
     return firstValueFrom(
       this.http.post<SyncResponse>(`${this.baseUrl}/google/sync`, {}, { headers: this.authHeaders() })
+    );
+  }
+
+  async disconnectGoogle() {
+    return firstValueFrom(
+      this.http.post<{ session: SessionSummary }>(`${this.baseUrl}/google/disconnect`, {}, { headers: this.authHeaders() })
     );
   }
 

@@ -15,12 +15,25 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Ensure tagged commit belongs to main
         run: |
           git fetch origin main
           git branch -r --contains "$GITHUB_SHA" | grep "origin/main"
 
-      - name: Trigger Netlify production deploy
-        run: curl -X POST -d '{}' "$NETLIFY_BUILD_HOOK"
+      - name: Build frontend
+        run: npm run app:build
+
+      - name: Deploy frontend to Netlify
+        run: npx netlify-cli deploy --dir=dist/apps/client/browser --prod --message "frontend release ${GITHUB_REF_NAME}"
         env:
-          NETLIFY_BUILD_HOOK: ${{ secrets.NETLIFY_BUILD_HOOK }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

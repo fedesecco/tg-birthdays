@@ -33,7 +33,7 @@ jobs:
         run: npm run app:build
 
       - name: Deploy frontend to Netlify
-        run: npx netlify-cli deploy --dir=dist/apps/client/browser --prod --message "frontend release ${GITHUB_REF_NAME}"
+        run: npx netlify-cli deploy --filter client --dir=dist/apps/client/browser --prod --message "frontend release ${GITHUB_REF_NAME}"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

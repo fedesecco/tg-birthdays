@@ -328,6 +328,17 @@ export function isGoogleInvalidGrantError(error: unknown) {
     return error instanceof Error && error.message.includes("invalid_grant");
 }
 
+function isGoogleIgnorableRevokeError(error: unknown) {
+    if (!(error instanceof Error)) {
+        return false;
+    }
+
+    const message = error.message.toLowerCase();
+    return message.includes("invalid_grant") ||
+        message.includes("token is not revokable") ||
+        message.includes("token is not revocable");
+}
+
 export async function disconnectGoogleAccount(userId: number) {
     const { data, error } = await supabase
         .from("users")
@@ -343,7 +354,7 @@ export async function disconnectGoogleAccount(userId: number) {
         try {
             await revokeGoogleToken(tokenToRevoke);
         } catch (revokeError) {
-            if (!isGoogleInvalidGrantError(revokeError)) {
+            if (!isGoogleIgnorableRevokeError(revokeError)) {
                 throw revokeError;
             }
         }

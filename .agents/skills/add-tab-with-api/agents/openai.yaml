@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Tab With API"
+  short_description: "Add repo-specific UI tabs with API support"
+  default_prompt: "Use $add-tab-with-api to add a new tg-birthdays tab or section with the right backend support."

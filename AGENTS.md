@@ -95,6 +95,7 @@ Notes:
 - Prefer reusing `Commands`, `Requests`, `MyContext`, and shared DTOs from `libs/shared-types` instead of duplicating literals or response shapes.
 - If an API contract changes, update both `apps/bot/src/web-api.ts` and the relevant client usage in `apps/client/src/app`.
 - If shared request/response shapes change, update `libs/shared-types/src/index.ts` and then fix both sides.
+- If a new client section needs a filtered, sorted, or aggregated dataset that does not match an existing paginated endpoint, add or adjust a backend API for that view instead of fetching every page client-side.
 - If database shape changes, update the Supabase schema/migration first and then regenerate `apps/bot/src/schema.ts`.
 - Keep bot command behavior and web API behavior aligned when they share the same underlying feature, especially Google sync and reminder state.
 - The repo mixes quote styles between the bot and the Angular client. Preserve nearby style rather than reformatting broadly.

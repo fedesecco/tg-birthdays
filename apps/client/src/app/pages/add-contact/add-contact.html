@@ -1,0 +1,44 @@
+<section class="panel">
+  <div class="section-head">
+    <div>
+      <p class="kicker">Inserimento rapido</p>
+      <h2>Aggiungi un compleanno</h2>
+    </div>
+  </div>
+
+  <form class="form-grid" [formGroup]="form" (ngSubmit)="submit()">
+    <label>
+      <span>Nome e cognome</span>
+      <input type="text" formControlName="displayName" placeholder="Mario Rossi" />
+    </label>
+
+    <div class="date-grid">
+      <label>
+        <span>Giorno</span>
+        <input type="number" formControlName="birthDay" min="1" max="31" />
+      </label>
+
+      <label>
+        <span>Mese</span>
+        <input type="number" formControlName="birthMonth" min="1" max="12" />
+      </label>
+
+      <label>
+        <span>Anno</span>
+        <input type="number" formControlName="birthYear" min="1900" max="9999" placeholder="Opzionale" />
+      </label>
+    </div>
+
+    <button class="primary-button" type="submit" [disabled]="form.invalid || loading()">
+      {{ loading() ? 'Salvataggio...' : 'Aggiungi contatto' }}
+    </button>
+  </form>
+
+  @if (success()) {
+    <p class="notice success">{{ success() }}</p>
+  }
+
+  @if (error()) {
+    <p class="notice error">{{ error() }}</p>
+  }
+</section>

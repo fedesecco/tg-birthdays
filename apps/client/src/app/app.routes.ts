@@ -4,21 +4,21 @@ export const appRoutes: Route[] = [
   {
     path: '',
     loadComponent: () =>
-      import('./pages/dashboard.page').then((module) => module.DashboardPageComponent),
+      import('./pages/dashboard/dashboard').then((module) => module.DashboardPageComponent),
   },
   {
     path: 'add',
     loadComponent: () =>
-      import('./pages/add-contact.page').then((module) => module.AddContactPageComponent),
+      import('./pages/add-contact/add-contact').then((module) => module.AddContactPageComponent),
   },
   {
     path: 'contacts',
     loadComponent: () =>
-      import('./pages/contacts.page').then((module) => module.ContactsPageComponent),
+      import('./pages/contacts/contacts').then((module) => module.ContactsPageComponent),
   },
   {
     path: 'upcoming',
     loadComponent: () =>
-      import('./pages/upcoming.page').then((module) => module.UpcomingPageComponent),
+      import('./pages/upcoming/upcoming').then((module) => module.UpcomingPageComponent),
   },
 ];

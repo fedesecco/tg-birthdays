@@ -1,0 +1,32 @@
+<section class="panel">
+  <div class="section-head">
+    <div>
+      <h2>Compleanni in arrivo</h2>
+    </div>
+  </div>
+
+  @if (error()) {
+    <p class="notice error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="notice">Caricamento compleanni in arrivo...</p>
+  } @else {
+    <div class="list">
+      @for (item of upcomingBirthdays(); track item.contact.id) {
+        <article class="row-card">
+          <div class="row-main">
+            <strong>{{ item.contact.displayName }}</strong>
+            <span>{{ relativeLabel(item.daysUntilBirthday) }} - {{ formatBirthDate(item.contact) }}</span>
+          </div>
+
+          <span class="countdown-pill" [style.--countdown-hue]="countdownHue(item.daysUntilBirthday)">
+            {{ item.daysUntilBirthday }}G
+          </span>
+        </article>
+      } @empty {
+        <p class="notice">Nessun compleanno nei prossimi 30 giorni.</p>
+      }
+    </div>
+  }
+</section>

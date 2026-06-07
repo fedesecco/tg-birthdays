@@ -1,0 +1,130 @@
+:host {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.panel {
+  display: grid;
+  gap: 0.9rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1.15rem;
+  padding: 1rem;
+  background: var(--app-surface);
+}
+
+.card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.kicker {
+  margin: 0 0 0.3rem;
+  color: var(--app-muted);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+h2 {
+  font-size: 1rem;
+}
+
+.description,
+.notice,
+.detail-row span {
+  color: var(--app-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.detail-list {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.detail-row {
+  display: grid;
+  gap: 0.18rem;
+  border: 1px solid var(--app-border);
+  border-radius: 0.95rem;
+  padding: 0.85rem 0.9rem;
+  background: var(--app-surface-strong);
+}
+
+.detail-row strong {
+  color: var(--app-text);
+  font-size: 0.93rem;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  background: rgba(74, 222, 128, 0.16);
+  color: #8ef0a8;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.status-pill.paused {
+  background: rgba(248, 113, 113, 0.16);
+  color: #ffb0b0;
+}
+
+.primary-button {
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  background: var(--app-accent);
+  color: #08111b;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+}
+
+.secondary-button {
+  border: 1px solid var(--app-border);
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  background: transparent;
+  color: var(--app-text);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.primary-button:disabled,
+.secondary-button:disabled {
+  opacity: 0.55;
+}
+
+.notice {
+  border-radius: 0.95rem;
+  padding: 0.9rem;
+  background: var(--app-surface-strong);
+}
+
+.notice.success {
+  background: rgba(74, 222, 128, 0.12);
+  color: #b9f6c9;
+}
+
+.notice.error {
+  background: rgba(120, 30, 40, 0.42);
+  color: #ffd9dc;
+}

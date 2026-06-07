@@ -1,0 +1,111 @@
+<section class="panel">
+  <div class="section-head">
+    <div>
+      <p class="kicker">Archivio</p>
+      <h2>Contatti</h2>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="filter-row" role="tablist" aria-label="Filtri origine">
+      @for (source of filters; track source.value) {
+        <button
+          type="button"
+          class="filter-chip"
+          [class.active]="selectedFilter() === source.value"
+          (click)="applyFilter(source.value)"
+        >
+          {{ source.label }}
+        </button>
+      }
+    </div>
+
+    <button type="button" class="primary-button" (click)="scanDuplicates()" [disabled]="duplicatesLoading()">
+      {{ duplicatesLoading() ? 'Analisi...' : 'Trova doppi' }}
+    </button>
+  </div>
+
+  <label class="search-field">
+    <span class="sr-only">Cerca per nome o cognome</span>
+    <input
+      type="search"
+      [value]="searchTerm()"
+      (input)="onSearchInput(($any($event.target).value ?? '').toString())"
+      placeholder="Cerca nome o cognome"
+    />
+  </label>
+
+  @if (error()) {
+    <p class="notice error">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="notice">Caricamento contatti...</p>
+  } @else {
+    <div class="list">
+      @for (contact of contacts(); track contact.id) {
+        <article class="row-card">
+          <div class="row-main">
+            <strong>{{ contact.displayName }}</strong>
+            <span>{{ formatBirthDate(contact) }}</span>
+          </div>
+          <span class="source-pill" [class.google]="contact.source === 'google'">{{ contact.source }}</span>
+        </article>
+      } @empty {
+        <p class="notice">Nessun contatto per questa ricerca.</p>
+      }
+    </div>
+  }
+
+  <div class="pagination">
+    <p class="page-summary">
+      @if (total() > 0) {
+        {{ visibleRangeLabel() }} di {{ total() }}
+      } @else {
+        0 risultati
+      }
+    </p>
+
+    <div class="page-actions">
+      <button type="button" class="secondary-button" (click)="goToPreviousPage()" [disabled]="!canGoPrevious() || loading()">
+        Indietro
+      </button>
+      <button type="button" class="secondary-button" (click)="goToNextPage()" [disabled]="!canGoNext() || loading()">
+        Avanti
+      </button>
+    </div>
+  </div>
+</section>
+
+@if (duplicates().length > 0) {
+  <section class="panel">
+    <div class="section-head compact">
+      <div>
+        <p class="kicker">Pulizia</p>
+        <h2>Duplicati suggeriti</h2>
+      </div>
+      <button type="button" class="primary-button" (click)="mergeAllDuplicates()">Unisci tutti</button>
+    </div>
+
+    <div class="list">
+      @for (candidate of duplicates(); track candidate.primary.id + '-' + candidate.duplicate.id) {
+        <article class="duplicate-card">
+          <strong>{{ candidate.confidence === 'exact' ? 'Duplicato certo' : 'Duplicato forte' }}</strong>
+          <p>{{ candidate.reason }}</p>
+          <div class="pair">
+            <div>
+              <span class="pair-label">Tieni</span>
+              <b>{{ candidate.primary.displayName }}</b>
+              <small>{{ formatBirthDate(candidate.primary) }} - {{ candidate.primary.source }}</small>
+            </div>
+            <div>
+              <span class="pair-label">Rimuovi</span>
+              <b>{{ candidate.duplicate.displayName }}</b>
+              <small>{{ formatBirthDate(candidate.duplicate) }} - {{ candidate.duplicate.source }}</small>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  </section>
+}

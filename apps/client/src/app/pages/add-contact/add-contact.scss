@@ -1,0 +1,75 @@
+.panel {
+  display: grid;
+  gap: 0.9rem;
+  border: 1px solid var(--app-border);
+  border-radius: 1.15rem;
+  padding: 1rem;
+  background: var(--app-surface);
+}
+
+.kicker {
+  margin: 0 0 0.3rem;
+  color: var(--app-muted);
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+.form-grid,
+.date-grid {
+  display: grid;
+  gap: 0.8rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+label span {
+  color: var(--app-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+input {
+  width: 100%;
+  border: 1px solid var(--app-border);
+  border-radius: 0.95rem;
+  padding: 0.88rem 0.95rem;
+  background: var(--app-surface-strong);
+  color: var(--app-text);
+}
+
+.primary-button {
+  justify-self: start;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.8rem 1rem;
+  background: var(--app-accent);
+  color: #08111b;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.notice {
+  border-radius: 0.95rem;
+  padding: 0.9rem;
+  color: var(--app-text);
+}
+
+.notice.success {
+  background: rgba(74, 222, 128, 0.16);
+  color: #b3f7c4;
+}
+
+.notice.error {
+  background: rgba(120, 30, 40, 0.42);
+  color: #ffd9dc;
+}

@@ -31,6 +31,7 @@ Supabase is the persistence layer, and Google Contacts sync is supported for imp
 - In production, the bot runs behind Express webhook handling at `Requests.telegramWebhook` instead of polling.
 - Scheduled routes such as `/birthDaysOfTheDay` and `/testCron` are handled by the bot app, not by a separate worker.
 - Interactive Telegram commands are no longer part of the product flow; the bot is now used for scheduled birthday reminders while user actions go through the Mini App frontend and `/api`.
+- Scheduled reminder routes are protected in production by the `X-Cron-Secret` header backed by the `CRON_SECRET` environment variable.
 - The Angular client talks to the bot backend under `/api`.
 - Client authentication is based on Telegram Mini App `initData`, with a development fallback via `X-Dev-User-Id` or `?userId=...`.
 - Supabase is initialized once in `apps/bot/src/platform.ts` and imported elsewhere.
@@ -59,6 +60,7 @@ Common local-development variables:
 - `TELEGRAM_DEV_BOT_TOKEN`
 - `NODE_ENV`
 - `PORT`
+- `CRON_SECRET` for local testing of scheduled HTTP routes
 
 Google sync variables:
 
@@ -86,6 +88,7 @@ Notes:
   - `SUPABASE_KEY`
   - `TELEGRAM_TOKEN`
   - `TELEGRAM_DEV_BOT_TOKEN`
+  - `CRON_SECRET`
   - `GOOGLE_CLIENT_ID`
   - `GOOGLE_CLIENT_SECRET`
   - `GOOGLE_REDIRECT_URI`
@@ -96,6 +99,7 @@ Notes:
   - `SUPABASE_URL`
   - `SUPABASE_KEY`
   - `TELEGRAM_TOKEN`
+  - `CRON_SECRET`
   - `GOOGLE_CLIENT_ID`
   - `GOOGLE_CLIENT_SECRET`
   - `GOOGLE_REDIRECT_URI`
@@ -115,6 +119,7 @@ Notes:
 
 - The bot/backend is containerized with `Dockerfile` and deployed through `cloudbuild.yaml` to Google Cloud Run.
 - The client is built separately and configured for Netlify via `netlify.toml`.
+- Daily reminder delivery is triggered by Google Cloud Scheduler calling the backend scheduled route.
 - The Netlify site is expected to be unlinked from Git-based continuous deployment.
 - Frontend production deploys ship through the tag-driven GitHub Actions workflow in `.github/workflows/deploy-frontend.yml`, which builds `apps/client` and uploads `dist/apps/client/browser` to Netlify with the CLI.
 - The frontend release workflow requires GitHub secrets `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`.
@@ -152,7 +157,9 @@ If behavior changed materially, also run the affected app locally with valid env
 - Do not remove or rewrite unrelated generated files unless explicitly asked.
 - Avoid hardcoding new chat IDs, Telegram user IDs, API URLs, or secrets without a clear request.
 - Update `AGENTS.md` in the same patch whenever repo structure, runtime model, deployment flow, secrets placement, or primary product flows change.
+- Update `README.md` in the same patch whenever repo structure, runtime model, deployment flow, secrets placement, or primary product flows change.
 - If a task removes, replaces, or significantly changes commands, routes, auth flows, or ownership between bot/backend/frontend, reflect that change in the relevant `AGENTS.md` section before considering the task complete.
+- If a task removes, replaces, or significantly changes commands, routes, auth flows, deployment, or ownership between bot/backend/frontend, reflect that change in the relevant `README.md` section before considering the task complete.
 - If a task touches shared types, verify both the bot API and Angular client compile against the change.
 - If a task touches Google sync, inspect both `apps/bot/src/google.ts` and the client surfaces that call it.
 - If a task touches birthday reminders, verify both the scheduled request path and the frontend/API state because the same backend owns both.

@@ -121,6 +121,7 @@ Notes:
 - The client is built separately and configured for Netlify via `netlify.toml`.
 - Daily reminder delivery is triggered by Google Cloud Scheduler calling the backend scheduled route.
 - The Netlify site is expected to be unlinked from Git-based continuous deployment.
+- GitHub Actions build the bot on bot/shared/config changes and build the frontend on frontend/shared/config changes.
 - Frontend production deploys ship through the tag-driven GitHub Actions workflow in `.github/workflows/deploy-frontend.yml`, which builds `apps/client` and uploads `dist/apps/client/browser` to Netlify with the CLI.
 - The frontend release workflow requires GitHub secrets `NETLIFY_AUTH_TOKEN` and `NETLIFY_SITE_ID`.
 - The Docker image only builds and runs the bot app; the Angular client is not served from the container.

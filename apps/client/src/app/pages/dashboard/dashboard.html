@@ -96,6 +96,8 @@
     @if (googleError()) {
       <p class="notice error">{{ googleError() }}</p>
     }
+
+    <p class="description">Versione bot: {{ appVersion }}</p>
   </section>
 } @else {
   <section class="panel">

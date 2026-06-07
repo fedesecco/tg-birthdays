@@ -1,5 +1,10 @@
 # tg-birthdays
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](LICENSE)
+[![Build Bot](https://github.com/fedesecco/tg-birthdays/actions/workflows/build-bot.yml/badge.svg)](https://github.com/fedesecco/tg-birthdays/actions/workflows/build-bot.yml)
+[![Build Frontend](https://github.com/fedesecco/tg-birthdays/actions/workflows/build-frontend.yml/badge.svg)](https://github.com/fedesecco/tg-birthdays/actions/workflows/build-frontend.yml)
+[![Deploy Frontend](https://github.com/fedesecco/tg-birthdays/actions/workflows/deploy-frontend.yml/badge.svg)](https://github.com/fedesecco/tg-birthdays/actions/workflows/deploy-frontend.yml)
+
 `tg-birthdays` is a Telegram-based birthday reminder app with a Telegram Mini App frontend for managing contacts and Google birthday sync.
 
 ## Features

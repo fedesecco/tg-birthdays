@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { GoogleSyncResult } from '@tg-birthdays/shared-types';
+import { appVersion } from '../../core/app-version';
 import { BackendApiService } from '../../core/backend-api.service';
 import { SessionStore } from '../../core/session.store';
 
@@ -27,6 +28,7 @@ type GoogleAuthPopupMessage =
 export class DashboardPageComponent {
   private readonly api = inject(BackendApiService);
   protected readonly sessionStore = inject(SessionStore);
+  protected readonly appVersion = appVersion;
 
   protected readonly reminderLoading = signal(false);
   protected readonly reminderError = signal<string | null>(null);

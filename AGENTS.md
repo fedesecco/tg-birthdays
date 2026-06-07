@@ -79,6 +79,38 @@ Notes:
 - In non-production mode the bot prefers `TELEGRAM_DEV_BOT_TOKEN`, then falls back to `TELEGRAM_TOKEN`.
 - The client chooses `http://localhost:3000` on localhost and otherwise defaults to the deployed Cloud Run backend unless `window.__TG_BDAYS_API_URL__` is injected at runtime.
 
+### Secret Placement
+
+- Root `.env` file for local bot/backend development:
+  - `SUPABASE_URL`
+  - `SUPABASE_KEY`
+  - `TELEGRAM_TOKEN`
+  - `TELEGRAM_DEV_BOT_TOKEN`
+  - `GOOGLE_CLIENT_ID`
+  - `GOOGLE_CLIENT_SECRET`
+  - `GOOGLE_REDIRECT_URI`
+  - `GOOGLE_OAUTH_STATE_SECRET` if you want an explicit state-signing secret locally
+  - `NODE_ENV`
+  - `PORT`
+- Cloud Run service runtime environment for production bot/backend:
+  - `SUPABASE_URL`
+  - `SUPABASE_KEY`
+  - `TELEGRAM_TOKEN`
+  - `GOOGLE_CLIENT_ID`
+  - `GOOGLE_CLIENT_SECRET`
+  - `GOOGLE_REDIRECT_URI`
+  - `GOOGLE_OAUTH_STATE_SECRET` optional; if omitted, the app falls back to `TELEGRAM_TOKEN`
+  - `NODE_ENV`
+  - `PORT`
+- GitHub Actions repository secrets for the frontend release workflow:
+  - `NETLIFY_AUTH_TOKEN`
+  - `NETLIFY_SITE_ID`
+- Script-only environment variables for `scripts/google-backfill-birthdays.mjs`:
+  - `TARGET_USER_ID`
+  - `GOOGLE_OAUTH_PORT`
+  - `REPORT_PATH`
+- The Angular client does not read secrets from its own `.env` file. If the frontend needs a runtime API override, inject `window.__TG_BDAYS_API_URL__` at runtime rather than adding a client secret.
+
 ## Deployment Shape
 
 - The bot/backend is containerized with `Dockerfile` and deployed through `cloudbuild.yaml` to Google Cloud Run.

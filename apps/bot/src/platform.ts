@@ -1,12 +1,8 @@
 import { Bot, session } from "grammy";
 import dotenv from "dotenv";
 import { createClient } from "@supabase/supabase-js";
-import { conversations, createConversation } from "@grammyjs/conversations";
 import { Database } from "./schema";
 import { MyContext } from "./enums";
-import { addConversation } from "./commands/add";
-import { deleteConversation } from "./commands/delete";
-import { searchConversation } from "./commands/search";
 
 dotenv.config();
 
@@ -18,10 +14,6 @@ if (!token) {
 
 export const bot = new Bot<MyContext>(token);
 bot.use(session({ initial: () => ({}) }));
-bot.use(conversations());
-bot.use(createConversation(addConversation));
-bot.use(createConversation(deleteConversation));
-bot.use(createConversation(searchConversation));
 
 export const supabase = createClient<Database>(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
     auth: { persistSession: false },

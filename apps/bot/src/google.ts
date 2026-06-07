@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "crypto";
-import { bot, supabase } from "./platform";
+import { supabase } from "./platform";
 
 const GOOGLE_AUTH_BASE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -93,6 +93,16 @@ export type GoogleSyncResult = {
     updatedCount: number;
     rows: GoogleSyncReportRow[];
 };
+
+export type GoogleAuthCompletion =
+    | {
+        type: "synced";
+        result: GoogleSyncResult;
+    }
+    | {
+        type: "cooldown";
+        message: string;
+    };
 
 export class GoogleSyncCooldownError extends Error {
     nextAllowedAt: string;
@@ -652,16 +662,16 @@ export async function completeGoogleAuthAndSync(code: string, userId: number) {
     await exchangeGoogleCode(code, userId);
     try {
         const result = await syncGoogleContacts(userId);
-        for (const message of formatGoogleSyncReport(result)) {
-            await bot.api.sendMessage(userId, message, { parse_mode: "HTML" });
-        }
+        return {
+            type: "synced",
+            result,
+        } satisfies GoogleAuthCompletion;
     } catch (error) {
         if (error instanceof GoogleSyncCooldownError) {
-            await bot.api.sendMessage(
-                userId,
-                `Account Google collegato. ${error.message}`
-            );
-            return;
+            return {
+                type: "cooldown",
+                message: error.message,
+            } satisfies GoogleAuthCompletion;
         }
 
         throw error;

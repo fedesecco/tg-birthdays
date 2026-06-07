@@ -5,6 +5,19 @@ import { BackendApiService } from '../../core/backend-api.service';
 import { SessionStore } from '../../core/session.store';
 
 const GOOGLE_SYNC_COOLDOWN_MS = 60 * 60 * 1000;
+const GOOGLE_AUTH_MESSAGE_SOURCE = 'tg-birthdays-google-auth';
+
+type GoogleAuthPopupMessage =
+  | {
+      source: typeof GOOGLE_AUTH_MESSAGE_SOURCE;
+      type: 'synced';
+      result: GoogleSyncResult;
+    }
+  | {
+      source: typeof GOOGLE_AUTH_MESSAGE_SOURCE;
+      type: 'cooldown';
+      message: string;
+    };
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,7 +114,15 @@ export class DashboardPageComponent {
       if (!session.googleConnected) {
         const response = await this.api.getGoogleAuthUrl();
         this.googleReconnectRequired.set(false);
-        this.openGoogleAuth(response.authUrl);
+        const completion = await this.openGoogleAuth(response.authUrl);
+        if (!completion) {
+          return;
+        }
+
+        this.googleMessage.set(
+          completion.type === 'synced' ? this.buildSyncSummary(completion.result) : completion.message
+        );
+        await this.sessionStore.refresh();
         return;
       }
 
@@ -165,11 +186,56 @@ export class DashboardPageComponent {
     }).format(value);
   }
 
-  private openGoogleAuth(authUrl: string) {
-    const opened = window.open(authUrl, '_blank', 'noopener,noreferrer');
-    if (!opened) {
-      window.location.href = authUrl;
+  private openGoogleAuth(authUrl: string): Promise<GoogleAuthPopupMessage | null> {
+    return new Promise((resolve) => {
+      const popup = window.open(authUrl, '_blank', 'noopener,noreferrer');
+      if (!popup) {
+        window.location.href = authUrl;
+        resolve(null);
+        return;
+      }
+
+      const cleanup = () => {
+        window.removeEventListener('message', onMessage);
+        window.clearInterval(closePoll);
+      };
+
+      const onMessage = (event: MessageEvent) => {
+        const data = event.data;
+        if (!this.isGoogleAuthPopupMessage(data)) {
+          return;
+        }
+
+        cleanup();
+        resolve(data);
+      };
+
+      const closePoll = window.setInterval(() => {
+        if (!popup.closed) {
+          return;
+        }
+
+        cleanup();
+        resolve(null);
+      }, 300);
+
+      window.addEventListener('message', onMessage);
+    });
+  }
+
+  private isGoogleAuthPopupMessage(value: unknown): value is GoogleAuthPopupMessage {
+    if (!value || typeof value !== 'object') {
+      return false;
     }
+
+    const payload = value as Record<string, unknown>;
+    const source = payload['source'];
+    const type = payload['type'];
+    if (source !== GOOGLE_AUTH_MESSAGE_SOURCE || (type !== 'synced' && type !== 'cooldown')) {
+      return false;
+    }
+
+    return type === 'cooldown' ? typeof payload['message'] === 'string' : payload['result'] != null;
   }
 
   private readApiError(error: unknown, fallback: string) {

@@ -36,6 +36,7 @@ import { getTelegramInitData, getTelegramWindow } from './core/telegram-webapp';
         <nav class="nav-strip" aria-label="Sezioni">
           <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
           <a routerLink="/contacts" routerLinkActive="active">Contatti</a>
+          <a routerLink="/upcoming" routerLinkActive="active">In arrivo</a>
           <a routerLink="/add" routerLinkActive="active">Aggiungi</a>
         </nav>
 

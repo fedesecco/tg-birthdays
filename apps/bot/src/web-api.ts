@@ -9,6 +9,8 @@ import {
     MergeDuplicateRequest,
     ReminderStatus,
     SessionSummary,
+    UpcomingBirthdaysResponse,
+    UpcomingBirthdayItem,
 } from "@tg-birthdays/shared-types";
 import {
     buildGoogleAuthUrl,
@@ -166,6 +168,42 @@ function compareContactsByName(a: BirthdayContact, b: BirthdayContact) {
     return a.displayName.localeCompare(b.displayName, "it", { sensitivity: "base" });
 }
 
+function startOfDay(value: Date) {
+    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+function buildBirthdayOccurrence(year: number, birthMonth: number, birthDay: number) {
+    const candidate = new Date(year, birthMonth - 1, birthDay);
+    if (candidate.getFullYear() !== year || candidate.getMonth() !== birthMonth - 1 || candidate.getDate() !== birthDay) {
+        return null;
+    }
+
+    return candidate;
+}
+
+function nextBirthdayDate(contact: BirthdayContact, referenceDate: Date) {
+    for (let year = referenceDate.getFullYear(); year <= referenceDate.getFullYear() + 8; year += 1) {
+        const candidate = buildBirthdayOccurrence(year, contact.birthMonth, contact.birthDay);
+        if (candidate && candidate.getTime() >= referenceDate.getTime()) {
+            return candidate;
+        }
+    }
+
+    throw new Error(`Unable to calculate next birthday for contact ${contact.id}`);
+}
+
+function diffInDays(from: Date, to: Date) {
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    return Math.round((to.getTime() - from.getTime()) / millisecondsPerDay);
+}
+
+function formatDateOnly(value: Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+}
+
 async function getSessionSummary(userId: number): Promise<SessionSummary> {
     const { data, error } = await supabase
         .from("users")
@@ -247,6 +285,48 @@ async function listAllContacts(userId: number) {
     }
 
     return (data ?? []).map((row) => mapBirthdayContact(row)).sort(compareContactsByName);
+}
+
+async function listUpcomingBirthdays(userId: number, days: number): Promise<UpcomingBirthdaysResponse> {
+    const maxDays = Math.min(Math.max(days, 1), 365);
+    const referenceDate = startOfDay(new Date());
+
+    const { data, error } = await supabase
+        .from("birthdays")
+        .select("id, display_name, birth_day, birth_month, birth_year, source, external_contact_id, google_contact_etag, created_at, updated_at")
+        .eq("user_id", userId);
+
+    if (error) {
+        throw error;
+    }
+
+    const birthdays = (data ?? [])
+        .map((row) => mapBirthdayContact(row))
+        .map((contact): UpcomingBirthdayItem => {
+            const nextBirthday = nextBirthdayDate(contact, referenceDate);
+            return {
+                contact,
+                daysUntilBirthday: diffInDays(referenceDate, nextBirthday),
+                nextBirthdayOn: formatDateOnly(nextBirthday),
+            };
+        })
+        .filter((item) => item.daysUntilBirthday >= 0 && item.daysUntilBirthday <= maxDays)
+        .sort((left, right) => {
+            if (left.daysUntilBirthday !== right.daysUntilBirthday) {
+                return left.daysUntilBirthday - right.daysUntilBirthday;
+            }
+
+            if (left.nextBirthdayOn !== right.nextBirthdayOn) {
+                return left.nextBirthdayOn.localeCompare(right.nextBirthdayOn);
+            }
+
+            return compareContactsByName(left.contact, right.contact);
+        });
+
+    return {
+        birthdays,
+        days: maxDays,
+    };
 }
 
 async function addManualContact(userId: number, input: ManualContactInput) {
@@ -470,6 +550,13 @@ export function registerApiRoutes(app: express.Express) {
         const query = typeof req.query.query === "string" ? req.query.query : undefined;
         const source = req.query.source === "manual" || req.query.source === "google" ? req.query.source : "all";
         const response = await listContacts(req.authUser!.id, { limit, offset, query, source });
+        res.json(response);
+    }));
+
+    router.get("/contacts/upcoming", asyncRoute(async (req, res) => {
+        await ensureUserRecord(req.authUser!.id, req.authUser!.name);
+        const days = typeof req.query.days === "string" ? Number.parseInt(req.query.days, 10) : 30;
+        const response = await listUpcomingBirthdays(req.authUser!.id, days);
         res.json(response);
     }));
 

@@ -22,6 +22,17 @@ export interface ContactListResponse {
   total: number;
 }
 
+export interface UpcomingBirthdayItem {
+  contact: BirthdayContact;
+  daysUntilBirthday: number;
+  nextBirthdayOn: string;
+}
+
+export interface UpcomingBirthdaysResponse {
+  birthdays: UpcomingBirthdayItem[];
+  days: number;
+}
+
 export interface SessionSummary {
   userId: number;
   name: string | null;

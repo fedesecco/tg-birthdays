@@ -8,6 +8,7 @@ import {
   ManualContactInput,
   MergeDuplicateRequest,
   SessionSummary,
+  UpcomingBirthdaysResponse,
 } from '@tg-birthdays/shared-types';
 import { firstValueFrom } from 'rxjs';
 import { getApiBaseUrl } from './api-base-url';
@@ -48,6 +49,17 @@ export class BackendApiService {
     const queryString = searchParams.toString();
     return firstValueFrom(
       this.http.get<ContactListResponse>(`${this.baseUrl}/contacts${queryString ? `?${queryString}` : ''}`, {
+        headers: this.authHeaders(),
+      })
+    );
+  }
+
+  async getUpcomingBirthdays(days = 30) {
+    const searchParams = new URLSearchParams();
+    searchParams.set('days', String(days));
+
+    return firstValueFrom(
+      this.http.get<UpcomingBirthdaysResponse>(`${this.baseUrl}/contacts/upcoming?${searchParams.toString()}`, {
         headers: this.authHeaders(),
       })
     );

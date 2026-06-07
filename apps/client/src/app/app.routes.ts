@@ -16,4 +16,9 @@ export const appRoutes: Route[] = [
     loadComponent: () =>
       import('./pages/contacts.page').then((module) => module.ContactsPageComponent),
   },
+  {
+    path: 'upcoming',
+    loadComponent: () =>
+      import('./pages/upcoming.page').then((module) => module.UpcomingPageComponent),
+  },
 ];
